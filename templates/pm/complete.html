@@ -1,0 +1,23 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:680px"><div class="panel-body">
+<form method="post" novalidate>{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+<div class="mb-3"><label class="form-label">Completion date <span class="text-danger">*</span></label>{{ form.completion_date }}{% for e in form.completion_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+{% if sched.checklist %}
+<div class="mb-3"><label class="form-label">Checklist — tick every required step</label>
+<div class="border rounded p-3" style="background:var(--bg-soft);border-color:var(--border)">{% for item in sched.checklist %}
+<div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="step_{{ forloop.counter0 }}" id="step_{{ forloop.counter0 }}"><label class="form-check-label" for="step_{{ forloop.counter0 }}" style="font-size:var(--fs-14)">{{ item.title }}{% if not item.required %} <span class="badge-st neutral">optional</span>{% endif %}</label></div>
+{% endfor %}</div></div>
+{% endif %}
+<div class="mb-3"><label class="form-label">Findings <span class="text-danger">*</span></label>{{ form.inspection_findings }}{% for e in form.inspection_findings.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="mb-3"><label class="form-label">Work performed <span class="text-danger">*</span></label>{{ form.work_done }}{% for e in form.work_done.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="mb-3"><label class="form-label">Cost (₹)</label>{{ form.cost }}</div>
+<div class="d-flex gap-2 mt-4">
+  <button class="btn btn-success" type="submit"><i class="bi bi-check-lg me-1"></i>Submit completion</button>
+  <a class="btn btn-ghost" href="{% url 'pm_detail' sched.pk %}">Cancel</a>
+</div>
+</form>
+</div></div>
+{% endblock %}

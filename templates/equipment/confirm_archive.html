@@ -1,0 +1,13 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:560px"><div class="panel-body">
+  <p class="mb-3">Archive <strong>{{ eq.asset_tag }} · {{ eq.name }}</strong>? History (requests, records, status log) is retained; the asset leaves active views.</p>
+  {% if open_sr or active_pm %}
+  <div class="alert alert-danger py-2 small"><i class="bi bi-exclamation-triangle me-1"></i>Blocked: {{ open_sr }} open request(s), {{ active_pm }} active schedule(s). Resolve them first — archival is refused server-side while blockers exist.</div>
+  {% else %}
+  <div class="alert alert-warning py-2 small"><i class="bi bi-exclamation-triangle me-1"></i>No blockers. Archival sets status to Decommissioned.</div>
+  {% endif %}
+  <div class="d-flex gap-2 mt-3"><form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit" {% if open_sr or active_pm %}disabled{% endif %}>Archive asset</button></form><a class="btn btn-ghost" href="{% url 'equipment_detail' eq.pk %}">Cancel</a></div>
+</div></div>
+{% endblock %}

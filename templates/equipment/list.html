@@ -1,0 +1,58 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions">{% if can_export %}<a class="btn btn-outline-primary" href="{% url 'equipment_export' %}?{{ request.GET.urlencode }}"><i class="bi bi-download me-1"></i>Export CSV</a>{% endif %}{% if can_manage %}<a class="btn btn-primary" href="{% url 'equipment_add' %}"><i class="bi bi-plus-lg me-1"></i>Add equipment</a>{% endif %}</div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" name="q" value="{{ p.q }}" placeholder="Search asset ID, name, serial, manufacturer…" style="flex:2;min-width:200px">
+  <select class="form-select" name="category"><option value="">Category</option>{% for c in categories %}<option value="{{ c.pk }}" {% if p.category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+  <select class="form-select" name="department"><option value="">Department</option>{% for d in departments %}<option value="{{ d.pk }}" {% if p.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }}</option>{% endfor %}</select>
+  <select class="form-select" name="status"><option value="">Status</option>
+    <option value="operational" {% if p.status == 'operational' %}selected{% endif %}>Operational</option>
+    <option value="breakdown" {% if p.status == 'breakdown' %}selected{% endif %}>Breakdown</option>
+    <option value="under_maintenance" {% if p.status == 'under_maintenance' %}selected{% endif %}>Under maintenance</option>
+    <option value="standby" {% if p.status == 'standby' %}selected{% endif %}>Standby</option>
+    <option value="decommissioned" {% if p.status == 'decommissioned' %}selected{% endif %}>Decommissioned</option></select>
+  <select class="form-select" name="criticality"><option value="">Criticality</option>
+    <option value="low" {% if p.criticality == 'low' %}selected{% endif %}>Low</option>
+    <option value="medium" {% if p.criticality == 'medium' %}selected{% endif %}>Medium</option>
+    <option value="high" {% if p.criticality == 'high' %}selected{% endif %}>High</option>
+    <option value="critical" {% if p.criticality == 'critical' %}selected{% endif %}>Critical</option></select>
+  <select class="form-select" name="vendor"><option value="">Vendor</option>{% for v in vendors %}<option value="{{ v.pk }}" {% if p.vendor == v.pk|stringformat:"s" %}selected{% endif %}>{{ v.name }}</option>{% endfor %}</select>
+  <select class="form-select" name="expiring"><option value="">Warranty</option><option value="30" {% if p.expiring == '30' %}selected{% endif %}>≤ 30 days</option><option value="90" {% if p.expiring == '90' %}selected{% endif %}>≤ 90 days</option></select>
+  <label class="small text-2 d-flex align-items-center gap-1"><input type="checkbox" name="inactive" value="1" {% if p.include_inactive %}checked{% endif %} class="form-check-input"> Archived</label>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Apply</button>
+  <a class="btn btn-ghost" href="{% url 'equipment_list' %}">Clear</a>
+</form>
+
+<div class="panel">
+  <div class="panel-body flush">
+  {% if page.object_list %}
+  <div class="table-wrap"><table class="table">
+  <thead><tr>
+  <th>Asset</th><th>Equipment</th><th>Dept</th><th>Status</th><th>Criticality</th>
+  <th>Next PM</th><th class="text-end">Actions</th></tr></thead>
+  <tbody>{% for e in page.object_list %}
+  <tr>
+    <td><a href="{% url 'equipment_detail' e.pk %}" style="font-weight:var(--fw-semibold);color:var(--text);text-decoration:none">{{ e.asset_tag }}</a>{% if not e.is_active %}<div class="tiny text-3">Archived</div>{% endif %}</td>
+    <td><div style="font-weight:var(--fw-medium)">{{ e.name }}</div><div class="tiny text-3">{{ e.category.name }} · {{ e.manufacturer }}</div></td>
+    <td class="text-2">{{ e.department.code }}</td>
+    <td>{% include "components/badge.html" with status=e.status %}</td>
+    <td>{% include "components/badge.html" with status=e.criticality %}</td>
+    <td class="text-2" style="white-space:nowrap">{{ e.next_pm_date|date:"M d, Y"|default:"—" }}</td>
+    <td class="text-end" style="white-space:nowrap">
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'equipment_detail' e.pk %}">View</a>
+    </td></tr>
+  {% endfor %}</tbody></table></div>
+  <div class="d-flex justify-content-between align-items-center p-3 border-top flex-wrap gap-2">
+  <span class="small text-3">Page {{ page.number }} of {{ paginator.num_pages }} · {{ paginator.count }} assets</span>
+  <nav><ul class="pagination pagination-sm mb-0">
+  {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.previous_page_number }}">‹</a></li>{% endif %}
+  <li class="page-item active"><span class="page-link">{{ page.number }}</span></li>
+  {% if page.has_next %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.next_page_number }}">›</a></li>{% endif %}
+  </ul></nav></div>
+  {% else %}
+  {% include "components/empty.html" with icon="bi-cpu" title="No equipment found" sub="Adjust filters or register a new asset." cta="" %}
+  {% endif %}
+  </div></div>
+{% endblock %}

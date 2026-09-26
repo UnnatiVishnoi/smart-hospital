@@ -1,0 +1,76 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} · {{ f.date_from }} → {{ f.date_to }}</div></div>
+<div class="actions">
+  <a class="btn btn-outline-primary" href="{% url 'reports_cost' %}?{{ request.GET.urlencode }}"><i class="bi bi-cash-coin me-1"></i>Costs</a>
+  <a class="btn btn-outline-primary" href="{% url 'reports_workload' %}?{{ request.GET.urlencode }}"><i class="bi bi-people me-1"></i>Workload</a>
+  <a class="btn btn-outline-primary" href="{% url 'reports_history' %}"><i class="bi bi-clock-history me-1"></i>History</a>
+  <a class="btn btn-outline-primary" href="{% url 'reports_requests_csv' %}?{{ request.GET.urlencode }}"><i class="bi bi-download me-1"></i>CSV</a>
+  <a class="btn btn-primary" href="{% url 'reports_print' %}?{{ request.GET.urlencode }}"><i class="bi bi-printer me-1"></i>Print</a>
+</div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" type="date" name="from" value="{{ f.date_from|date:'Y-m-d' }}" style="max-width:170px" aria-label="From">
+  <input class="form-control" type="date" name="to" value="{{ f.date_to|date:'Y-m-d' }}" style="max-width:170px" aria-label="To">
+  <select class="form-select" name="department"><option value="">Dept</option>{% for d in departments %}<option value="{{ d.pk }}" {% if f.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }}</option>{% endfor %}</select>
+  <select class="form-select" name="category"><option value="">Category</option>{% for c in categories %}<option value="{{ c.pk }}" {% if f.category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+  <select class="form-select" name="status"><option value="">Equipment status</option>
+    <option value="operational" {% if f.status == 'operational' %}selected{% endif %}>Operational</option>
+    <option value="breakdown" {% if f.status == 'breakdown' %}selected{% endif %}>Breakdown</option>
+    <option value="under_maintenance" {% if f.status == 'under_maintenance' %}selected{% endif %}>Under maintenance</option>
+    <option value="standby" {% if f.status == 'standby' %}selected{% endif %}>Standby</option></select>
+  <button class="btn btn-primary" type="submit">Apply</button>
+  <a class="btn btn-ghost" href="{% url 'reports' %}">Reset</a>
+</form>
+
+<div class="stat-grid stagger-children">{% for kpi in kpis %}{% include "components/kpi_card.html" with kpi=kpi %}{% endfor %}</div>
+
+<div class="grid-2">
+  <div class="panel"><div class="panel-head"><h3>Equipment status mix</h3></div><div class="panel-body"><div class="chart-box sm"><canvas id="rStatus"></canvas></div></div></div>
+  <div class="panel"><div class="panel-head"><h3>Breakdowns vs completions</h3></div><div class="panel-body"><div class="chart-box sm"><canvas id="rTrend"></canvas></div></div></div>
+</div>
+<div class="grid-2 mt-4">
+  <div class="panel"><div class="panel-head"><h3>Maintenance spend</h3><span class="link text-3 small">Labour + parts</span></div><div class="panel-body"><div class="chart-box sm"><canvas id="rCost"></canvas></div></div></div>
+  <div class="panel"><div class="panel-head"><h3>Breakdowns by department</h3></div><div class="panel-body"><div class="chart-box sm"><canvas id="rDept"></canvas></div></div></div>
+</div>
+
+<div class="grid-2 mt-4">
+  <div class="panel"><div class="panel-head"><h3>Top assets by breakdowns</h3></div><div class="panel-body flush">
+    {% if m.by_eq %}<div class="table-wrap"><table class="table"><thead><tr><th>Asset</th><th class="text-end">Requests</th></tr></thead>
+    <tbody>{% for r in m.by_eq %}<tr><td><strong>{{ r.equipment__asset_tag }}</strong><div class="tiny text-3">{{ r.equipment__name }}</div></td><td class="text-end fw-bold">{{ r.n }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}{% include "components/empty.html" with title="No breakdowns in range" sub="Widen the dates or clear filters." %}{% endif %}
+  </div></div>
+  <div class="panel"><div class="panel-head"><h3>Warranty watch (≤ 90 days)</h3></div><div class="panel-body flush">
+    <div class="d-flex gap-2 px-3 pt-3"><span class="badge-st danger">{{ m.expired }} expired</span><span class="badge-st warning">{{ m.expiring }} expiring</span></div>
+    {% if m.warranty_list %}<div class="table-wrap"><table class="table"><thead><tr><th>Asset</th><th>Expiry</th></tr></thead>
+    <tbody>{% for w in m.warranty_list %}<tr><td><strong>{{ w.asset_tag }}</strong><div class="tiny text-3">{{ w.department__code }}</div></td><td class="text-2">{{ w.warranty_expiry|date:"M d, Y" }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="small text-3 px-3 py-2">No warranties expiring in range.</p>{% endif %}
+  </div></div>
+</div>
+
+<div class="panel mt-4"><div class="panel-head"><h3>Historical patterns</h3><span class="badge-st neutral ms-auto">Descriptive only — not predictions</span></div>
+<div class="panel-body"><ul class="mb-2">{% for i in insights %}<li class="small text-2 mb-2">{{ i }}</li>{% endfor %}</ul>
+<p class="tiny text-3 mb-0">Definitions: downtime = Σ request downtime for resolutions in range · avg repair = mean(resolved − requested) · spend = Σ job cost + Σ parts · PM compliance = schedules executed ÷ schedules due in range. Equipment with no records contributes zeros, never estimates.</p></div></div>
+{% endblock %}
+{% block extra_js %}
+<script id="r-status" type="application/json">{{ status_json|safe }}</script>
+<script id="r-trend" type="application/json">{{ trend_json|safe }}</script>
+<script id="r-cost" type="application/json">{{ cost_json|safe }}</script>
+<script id="r-dept" type="application/json">{{ dept_json|safe }}</script>
+<script>
+(function(){
+  function read(id){ try { return JSON.parse(document.getElementById(id).textContent); } catch(e){ return null; } }
+  if(typeof Chart === 'undefined') return;
+  var blue = '#1e63e9', teal = '#0e9f8a', amber = '#c47b12', red = '#c0362c', gray = '#cbd5e8', navy = '#0f2040';
+  function mk(id, cfg){ var el = document.getElementById(id); if(el) new Chart(el, cfg); }
+  var s = read('r-status');
+  mk('rStatus', {type:'doughnut', data:{labels:s.labels, datasets:[{data:s.data, backgroundColor:[teal,amber,red,gray,'#7d8db0'], borderWidth:2, borderColor:'#fff', hoverBorderWidth:3}]}, options:{maintainAspectRatio:false, cutout:'72%', plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:11}, usePointStyle:true, pointStyle:'circle'}}}}});
+  var t = read('r-trend');
+  mk('rTrend', {type:'bar', data:{labels:t.labels, datasets:[{label:'Breakdowns', data:t.sr, backgroundColor:blue, borderRadius:6}, {label:'Completions', data:t.done, backgroundColor:'#b9cdf3', borderRadius:6}]}, options:{maintainAspectRatio:false, scales:{x:{grid:{display:false}}, y:{beginAtZero:true, ticks:{precision:0}, grid:{color:'#f0f3f7'}}}, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:11}, usePointStyle:true, pointStyle:'circle'}}}}});
+  var c = read('r-cost');
+  mk('rCost', {type:'line', data:{labels:c.labels, datasets:[{label:'Spend (₹)', data:c.cost, borderColor:teal, backgroundColor:'rgba(14,159,138,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:teal, pointBorderColor:'#fff', pointBorderWidth:2}]}, options:{maintainAspectRatio:false, scales:{y:{beginAtZero:true, grid:{color:'#f0f3f7'}}}, plugins:{legend:{display:false}}}});
+  var d = read('r-dept');
+  mk('rDept', {type:'bar', data:{labels:d.labels, datasets:[{data:d.data, backgroundColor:navy, borderRadius:6, hoverBackgroundColor:blue}]}, options:{indexAxis:'y', maintainAspectRatio:false, scales:{x:{beginAtZero:true, ticks:{precision:0}, grid:{color:'#f0f3f7'}}, y:{grid:{display:false}}}, plugins:{legend:{display:false}}}});
+})();
+</script>
+{% endblock %}

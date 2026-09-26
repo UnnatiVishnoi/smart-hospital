@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-primary" href="{% url 'user_create' %}"><i class="bi bi-plus-lg me-1"></i>Add user</a></div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" name="q" value="{{ q }}" placeholder="Search name, username, email…" style="flex:1;min-width:200px">
+  <select class="form-select" name="role"><option value="">Role: all</option>
+    <option value="admin" {% if role_f == 'admin' %}selected{% endif %}>Administrator</option>
+    <option value="manager" {% if role_f == 'manager' %}selected{% endif %}>Manager</option>
+    <option value="technician" {% if role_f == 'technician' %}selected{% endif %}>Technician</option>
+    <option value="staff" {% if role_f == 'staff' %}selected{% endif %}>Staff</option></select>
+  <select class="form-select" name="status"><option value="">Status: all</option>
+    <option value="active" {% if status_f == 'active' %}selected{% endif %}>Active</option>
+    <option value="inactive" {% if status_f == 'inactive' %}selected{% endif %}>Inactive</option></select>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Search</button>
+  {% if q or role_f or status_f %}<a class="btn btn-ghost" href="{% url 'user_list' %}">Clear</a>{% endif %}
+</form>
+
+<div class="panel"><div class="panel-body flush">
+  {% if users %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>User</th><th>Role</th><th>Department</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>{% for u in users %}
+      <tr>
+        <td><a href="#" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ u.get_full_name|default:u.username }}</a><div class="tiny text-3">@{{ u.username }} · {{ u.email|default:"—" }}</div></td>
+        <td><span class="badge-st {% if u.role == 'admin' %}primary{% elif u.role == 'manager' %}info{% elif u.role == 'technician' %}warning{% else %}neutral{% endif %}">{{ u.get_role_display }}</span></td>
+        <td class="text-2">{{ u.department|default:"—" }}</td>
+        <td>{% if u.is_active %}<span class="badge-st success">Active</span>{% else %}<span class="badge-st danger">Inactive</span>{% endif %}</td>
+        <td class="text-end" style="white-space:nowrap">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'user_edit' u.pk %}"><i class="bi bi-pencil"></i> Edit</a>
+          <form method="post" action="{% url 'user_toggle' u.pk %}" class="d-inline">{% csrf_token %}
+            <button class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-primary{% endif %}" type="submit" {% if u.pk == request.user.pk %}disabled title="You cannot change your own status"{% endif %}>{% if u.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+          </form>
+        </td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}
+  <div class="empty"><div class="empty-ic"><i class="bi bi-people"></i></div><h3 style="font-size:.95rem">No users match</h3><p class="small text-3">Try different filters or add a new user.</p><a class="btn btn-primary btn-sm" href="{% url 'user_create' %}">Add user</a></div>
+  {% endif %}
+</div></div>
+{% if is_paginated %}<div class="d-flex justify-content-end mt-3"><nav><ul class="pagination pagination-sm mb-0">
+  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role_f }}&status={{ status_f }}">‹</a></li>{% endif %}
+  <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role_f }}&status={{ status_f }}">›</a></li>{% endif %}
+</ul></nav></div>{% endif %}
+{% endblock %}

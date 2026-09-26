@@ -1,0 +1,16 @@
+/* Print: isolate the report sheet */
+.print-sheet{max-width:900px;margin:0 auto;padding:2rem;font-family:Inter,sans-serif;color:#0f1f3c}
+.print-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+.print-head h1{font-size:1.4rem;margin:0}
+.print-head p{color:#5b6b85;font-size:.85rem;margin:.2rem 0 0}
+.btn-print{background:#1e63e9;color:#fff;border:0;border-radius:8px;padding:.55rem 1.1rem;font-weight:600;cursor:pointer}
+.print-table{width:100%;border-collapse:collapse;margin:.8rem 0;font-size:.87rem}
+.print-table th,.print-table td{border:1px solid #cfd8e6;padding:.5rem .7rem;text-align:left}
+.print-table thead th{background:#eef2f7;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.print-sheet h2{font-size:1.05rem;margin:1.2rem 0 .4rem}
+.print-sheet li{font-size:.87rem;margin-bottom:.25rem}
+@media print{
+  .btn-print{display:none}
+  .print-sheet{padding:0;max-width:none}
+  body{background:#fff}
+}

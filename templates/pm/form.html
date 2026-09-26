@@ -1,0 +1,34 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:760px"><div class="panel-body">
+<form method="post" novalidate>{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label">Equipment <span class="text-danger">*</span></label>{{ form.equipment }}{% for e in form.equipment.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Title <span class="text-danger">*</span></label>{{ form.title }}{% for e in form.title.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-4"><label class="form-label">Maintenance type</label>{{ form.maintenance_type }}</div>
+<div class="col-md-4"><label class="form-label">Plan</label>{{ form.schedule_type }}</div>
+<div class="col-md-4"><label class="form-label">Priority</label>{{ form.priority }}</div>
+<div class="col-md-4"><label class="form-label">Frequency</label>{{ form.frequency }}</div>
+<div class="col-md-4"><label class="form-label">Interval (days)</label>{{ form.interval_days }}{% for e in form.interval_days.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}<div class="form-text">Auto-filled except Custom.</div></div>
+<div class="col-md-4"><label class="form-label">Next due <span class="text-danger">*</span></label>{{ form.next_due_date }}{% for e in form.next_due_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Technician</label>{{ form.assigned_to }}</div>
+<div class="col-md-6"><label class="form-label">Notes</label>{{ form.notes }}</div>
+<div class="col-12"><label class="form-label">Inspection checklist</label>{{ form.checklist_text }}<div class="form-text">{{ form.checklist_text.help_text }}</div></div>
+</div>
+<div class="d-flex gap-2 mt-4">
+  <button class="btn btn-primary" type="submit">{% if mode == 'create' %}<i class="bi bi-plus-lg me-1"></i>Create schedule{% else %}<i class="bi bi-check-lg me-1"></i>Save changes{% endif %}</button>
+  <a class="btn btn-ghost" href="{% if sched %}{% url 'pm_detail' sched.pk %}{% else %}{% url 'pm_list' %}{% endif %}">Cancel</a>
+</div>
+</form>
+</div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var freq = document.getElementById('id_frequency'), iv = document.getElementById('id_interval_days');
+var map = {daily:1, weekly:7, monthly:30, quarterly:90, half_yearly:182, yearly:365};
+freq.addEventListener('change', function(){ if(map[this.value]){ iv.value = map[this.value]; iv.readOnly = true; } else { iv.readOnly = false; } });
+if(map[freq.value]) iv.readOnly = true;
+</script>
+{% endblock %}

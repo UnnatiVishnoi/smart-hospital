@@ -1,0 +1,12 @@
+{# Modal + confirm (Bootstrap) #}
+<div class="modal fade" id="{{ modal_id|default:'demoModal' }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">{{ modal_title|default:"Assign technician" }}</h5><button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body"><p class="text-2 mb-2">{{ modal_body|default:"Choose a technician for SR-2026-0140. Workload-balanced suggestions first." }}</p>
+        <select class="form-select"><option>A. Sharma — 3 active (Ventilators)</option><option>S. Khan — 2 active (Monitors)</option><option>R. Iyer — 4 active (Imaging)</option></select>
+      </div>
+      <div class="modal-footer"><button class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" data-bs-dismiss="modal" onclick="toast('Technician assigned (demo)')">Confirm assign</button></div>
+    </div>
+  </div>
+</div>

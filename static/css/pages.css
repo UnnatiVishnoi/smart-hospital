@@ -1,0 +1,70 @@
+/* Dashboard page */
+
+/* KPI grid */
+.stat-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:1rem;margin-bottom:var(--sp-6);
+}
+@media(max-width:1200px){.stat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:576px){.stat-grid{grid-template-columns:repeat(2,1fr);gap:.75rem}}
+
+/* 2-column grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;min-width:0}
+@media(max-width:991px){.grid-2{grid-template-columns:1fr}}
+
+/* 2:1 grid (golden ratio) */
+.grid-3t{display:grid;grid-template-columns:1.4fr 1fr;gap:1rem;margin-top:1rem;min-width:0}
+@media(max-width:991px){.grid-3t{grid-template-columns:1fr}}
+.grid-2>*,.grid-3t>*{min-width:0}
+
+/* Dashboard welcome strip */
+.dash-welcome{
+  display:flex;align-items:center;gap:var(--sp-4);
+  padding:var(--sp-5) var(--sp-6);
+  background:linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-2) 100%);
+  border-radius:var(--r-14);margin-bottom:var(--sp-6);
+  color:#fff;position:relative;overflow:hidden;
+  animation:fadeInUp var(--t-slow) var(--ease-spring) both;
+}
+.dash-welcome::after{
+  content:"";position:absolute;right:-60px;top:-60px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle, rgba(30,99,233,.2) 0%, transparent 70%);
+  pointer-events:none;
+}
+.dash-welcome .welcome-text{flex:1;min-width:0;position:relative;z-index:1}
+.dash-welcome .welcome-text h2{color:#fff;font-size:var(--fs-20);margin-bottom:.25rem}
+.dash-welcome .welcome-text p{color:#a8c0e0;font-size:var(--fs-14);max-width:500px}
+.dash-welcome .welcome-actions{display:flex;gap:.6rem;flex-wrap:wrap;position:relative;z-index:1}
+.dash-welcome .btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(8px)}
+.dash-welcome .btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);color:#fff}
+.dash-welcome .btn-primary{background:var(--medical-blue);border-color:var(--medical-blue)}
+.dash-welcome .btn-primary:hover{background:var(--medical-blue-dark);border-color:var(--medical-blue-dark)}
+
+/* Quick stat pills in welcome */
+.welcome-pills{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap}
+.welcome-pill{
+  display:flex;align-items:center;gap:.35rem;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-pill);padding:.35rem .75rem;font-size:var(--fs-12);
+  color:#c0d0ea;transition:all var(--t-fast);
+}
+.welcome-pill:hover{background:rgba(255,255,255,.14);color:#fff}
+.welcome-pill .pill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+@media(max-width:576px){
+  .dash-welcome{flex-direction:column;align-items:flex-start;padding:var(--sp-4)}
+  .dash-welcome .welcome-text h2{font-size:var(--fs-18)}
+  .welcome-pills{display:none}
+}
+
+/* Chart tooltip custom styles */
+.chart-tooltip{
+  background:var(--brand-navy) !important;color:#fff !important;
+  border-radius:var(--r-8) !important;padding:.5rem .75rem !important;
+  font-size:var(--fs-12) !important;box-shadow:var(--shadow-lg) !important;
+  border:none !important;
+}
+.chart-tooltip::before{display:none !important}
+
+/* Django plot div override */
+.django-plot{width:100%!important;overflow:auto;border-radius:var(--r-8)}

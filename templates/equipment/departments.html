@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'equipment_list' %}"><i class="bi bi-table me-1"></i>Inventory</a>{% if request.user.role in 'admin manager' or request.user.is_superuser %}<a class="btn btn-primary" href="{% url 'equipment_add' %}"><i class="bi bi-plus-lg me-1"></i>Add equipment</a>{% endif %}</div></div>
+<div class="grid-2">{% for c in cards %}
+<div class="panel"><div class="panel-head"><h3>{{ c.dept.name }} <span class="text-3" style="font-weight:400;color:var(--text-3)">· {{ c.dept.code }}</span></h3>
+  <span class="badge-st {% if c.attention %}danger{% else %}success{% endif %}">{{ c.total }} assets</span>
+</div>
+<div class="panel-body">
+  <div class="d-flex gap-2 flex-wrap mb-3">
+    <span class="badge-st success">{{ c.operational }} operational</span>
+    {% if c.attention %}<span class="badge-st danger">{{ c.attention }} attention</span>{% endif %}
+    {% if c.critical %}<span class="badge-st warning">{{ c.critical }} critical</span>{% endif %}
+  </div>
+  {% for e in c.items %}<a href="{% url 'equipment_detail' e.pk %}" class="list-row" style="color:inherit">
+    <div style="min-width:0"><div style="font-size:.84rem;font-weight:600">{{ e.asset_tag }} · {{ e.name }}</div><div class="tiny text-3">{{ e.category.name }}</div></div>
+    {% include "components/badge.html" with status=e.status %}
+  </a>{% empty %}<p class="small text-3 mb-0">No assets in this department.</p>{% endfor %}
+</div></div>
+{% empty %}{% include "components/empty.html" with title="No departments visible" sub="Your role scope has no departments." %}{% endfor %}</div>
+{% endblock %}

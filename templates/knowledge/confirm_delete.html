@@ -1,0 +1,8 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:560px"><div class="panel-body">
+  <p>Delete <strong>{{ manual.title }}</strong>? The PDF and its indexed passages are removed permanently.</p>
+  <div class="d-flex gap-2 mt-3"><form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit"><i class="bi bi-trash me-1"></i>Delete</button></form><a class="btn btn-ghost" href="{% url 'manual_detail' manual.pk %}">Cancel</a></div>
+</div></div>
+{% endblock %}

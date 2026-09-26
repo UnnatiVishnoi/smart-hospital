@@ -1,0 +1,54 @@
+{% extends "layouts/app.html" %}
+{% block extra_css %}{% load static %}<link href="{% static 'css/pm.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'pm_list' %}"><i class="bi bi-table me-1"></i>Schedules</a>{% if can_manage %}<a class="btn btn-primary" href="{% url 'pm_create' %}"><i class="bi bi-plus-lg me-1"></i>New schedule</a>{% endif %}</div></div>
+
+<div class="stat-grid stagger-children">{% for kpi in kpis %}{% include "components/kpi_card.html" with kpi=kpi %}{% endfor %}</div>
+
+<div class="grid-2">
+<div class="panel">
+  <div class="panel-head"><h3>Service calendar — {{ cur|date:"F Y" }}</h3>
+    <div class="link d-flex gap-2"><a href="?month={{ prev_m }}"><i class="bi bi-chevron-left"></i> Prev</a><a href="?month={{ next_m }}">Next <i class="bi bi-chevron-right"></i></a></div>
+  </div>
+  <div class="panel-body">
+    <div class="cal-grid"><div class="cal-dow">Mo</div><div class="cal-dow">Tu</div><div class="cal-dow">We</div><div class="cal-dow">Th</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div><div class="cal-dow">Su</div></div>
+    <div class="cal-grid mt-1">{% for week in weeks %}{% for cell in week %}{% if cell %}
+    <div class="cal-cell {% if cell.day == today.day and cur.month == today.month and cur.year == today.year %}today{% endif %}">
+      <div class="cal-day">{{ cell.day }}</div>
+      {% for s in cell.items|slice:":3" %}<a href="{% url 'pm_detail' s.pk %}" title="{{ s.title }} · {{ s.equipment.asset_tag }}" class="cal-item {% if s.next_due_date < today %}overdue{% endif %}"><span>{{ s.equipment.asset_tag }}</span></a>{% endfor %}
+      {% if cell.items|length > 3 %}<div class="cal-more">+{{ cell.items|length|add:"-3" }} more</div>{% endif %}
+    </div>
+    {% else %}<div class="cal-cell empty"></div>{% endif %}{% endfor %}{% endfor %}</div>
+    <p class="tiny text-3 mt-2 mb-0">Dots show scheduled due dates. Full agenda is in Schedules.</p>
+  </div></div>
+
+<div>
+  <div class="panel mb-3"><div class="panel-head"><h3>Overdue now</h3><a class="link text-3 small" href="{% url 'pm_list' %}?state=overdue">All</a></div>
+  <div class="panel-body" style="padding-top:.5rem">{% for s in overdue %}
+    <a href="{% url 'pm_detail' s.pk %}" class="list-row" style="color:inherit">
+      <span class="timeline-ic" style="background:var(--danger-bg);color:var(--danger)"><i class="bi bi-exclamation-triangle"></i></span>
+      <div style="min-width:0"><div style="font-size:.84rem;font-weight:600">{{ s.title }}</div><div class="tiny text-3">{{ s.equipment.asset_tag }} · {{ s.assigned_to|default:"Unassigned" }}</div></div>
+      <span class="badge-st danger ms-auto">{{ s.next_due_date|date:"M d" }}</span>
+    </a>
+    {% empty %}<div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-check-circle"></i></div><h3 style="font-size:.9rem">Nothing overdue</h3><p class="small text-3 mb-0">All schedules on track.</p></div>
+    {% endfor %}
+  </div></div>
+
+  <div class="panel"><div class="panel-head"><h3>Due today</h3></div>
+  <div class="panel-body" style="padding-top:.5rem">{% for s in due_today %}
+    <a href="{% url 'pm_detail' s.pk %}" class="list-row" style="color:inherit">
+      <span class="timeline-ic" style="background:var(--warning-bg);color:var(--warning)"><i class="bi bi-calendar-event"></i></span>
+      <div style="min-width:0"><div style="font-size:.84rem;font-weight:600">{{ s.title }}</div><div class="tiny text-3">{{ s.equipment.asset_tag }} · {{ s.assigned_to|default:"Unassigned" }}</div></div>
+      <span class="badge-st warning ms-auto">Today</span>
+    </a>
+    {% empty %}<p class="small text-3">Nothing due today.</p>{% endfor %}
+  </div></div>
+</div>
+</div>
+
+<div class="panel mt-4"><div class="panel-head"><h3>Equipment requiring attention</h3><a class="link text-3 small" href="{% url 'equipment_list' %}?status=breakdown">Inventory</a></div>
+<div class="panel-body flush">{% if attention_eq %}<div class="table-wrap"><table class="table"><thead><tr><th>Asset</th><th>Status</th><th>Department</th></tr></thead>
+<tbody>{% for e in attention_eq %}<tr><td><a href="{% url 'equipment_detail' e.pk %}" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ e.asset_tag }}</a><div class="tiny text-3">{{ e.name }}</div></td><td>{% include "components/badge.html" with status=e.status %}</td><td class="text-2">{{ e.department.code }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="empty"><div class="empty-ic"><i class="bi bi-check-circle"></i></div><h3 style="font-size:.9rem">Fleet healthy</h3></div>{% endif %}</div></div>
+{% endblock %}

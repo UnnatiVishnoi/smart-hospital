@@ -1,0 +1,84 @@
+{% extends "layouts/app.html" %}
+{% load ui_extras %}
+{% block content %}
+<div class="page-head"><div><h1>{{ sr.ticket_no }}</h1>
+<div class="subtitle">{{ sr.equipment.asset_tag }} · {{ sr.equipment.name }} · {% include "components/badge.html" with status=sr.priority %} {% include "components/badge.html" with status=sr.status %}{% if sr.deadline %} · due {{ sr.deadline|date:"M d, H:i" }}{% if sr.is_overdue %} <span class="badge-st danger">Overdue</span>{% endif %}{% endif %}</div></div>
+<div class="actions"><a class="btn btn-ghost" href="{% url 'request_list' %}"><i class="bi bi-arrow-left me-1"></i>All requests</a></div></div>
+
+<div class="grid-2">
+<div>
+  <div class="panel mb-3">
+    <div class="panel-head"><h3>Fault report</h3><span class="link text-3 small">{{ sr.requested_at|date:"M d, Y H:i" }} · by {{ sr.requested_by|default:"—" }}</span></div>
+    <div class="panel-body">
+      <p class="mb-2" style="line-height:var(--lh-relaxed)">{{ sr.description|linebreaksbr }}</p>
+      {% if sr.issue_type %}<div class="small text-2 mb-2"><span class="badge-st neutral">{{ sr.issue_type }}</span></div>{% endif %}
+      {% if sr.attachment %}<a href="{{ sr.attachment.url }}" target="_blank"><img src="{{ sr.attachment.url }}" alt="supporting image" style="max-width:100%;max-height:220px;border-radius:var(--r-10);border:1px solid var(--border)" class="mt-2"></a>{% endif %}
+      <hr class="mt-3">
+      <div class="row g-2 small">
+        <div class="col-6"><div class="subtle-label">Assigned to</div><strong>{{ sr.assigned_to|default:"Unassigned" }}</strong></div>
+        <div class="col-6"><div class="subtle-label">Deadline</div><strong>{{ sr.deadline|date:"M d, H:i"|default:"—" }}</strong></div>
+        {% if show_remarks %}<div class="col-12"><div class="subtle-label">Internal remarks (manager-only)</div><div>{{ sr.internal_remarks|default:"—"|linebreaksbr }}</div></div>{% endif %}
+        {% if sr.downtime_hours %}<div class="col-6"><div class="subtle-label">Downtime</div><strong>{{ sr.downtime_hours }} h</strong></div>{% endif %}
+        {% if sr.satisfaction_rating %}<div class="col-6"><div class="subtle-label">Satisfaction</div><strong>{{ sr.satisfaction_rating }}/5</strong></div>{% endif %}
+      </div>
+    </div></div>
+
+  <div class="panel"><div class="panel-head"><h3>Equipment summary</h3><a class="link text-3 small" href="{% url 'equipment_detail' sr.equipment.pk %}">Full record →</a></div>
+  <div class="panel-body"><div class="row g-2 small">
+    <div class="col-6"><div class="subtle-label">Asset</div><strong>{{ sr.equipment.asset_tag }}</strong></div>
+    <div class="col-6"><div class="subtle-label">Status</div>{% include "components/badge.html" with status=sr.equipment.status %}</div>
+    <div class="col-6"><div class="subtle-label">Department</div>{{ sr.equipment.department.name }}</div>
+    <div class="col-6"><div class="subtle-label">Location</div>{{ sr.equipment.location_detail|default:"—" }}</div>
+  </div></div></div>
+</div>
+
+<div>
+  <div class="panel mb-3"><div class="panel-head"><h3>Action panel</h3></div><div class="panel-body d-flex flex-wrap gap-2">
+    {% if can_assign %}
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assignModal"><i class="bi bi-person-plus me-1"></i>Assign / reassign</button>
+    {% endif %}
+    {% for a in actions %}
+      {% if a == 'in_progress' %}<form method="post" action="{% url 'request_transition' sr.pk 'in_progress' %}">{% csrf_token %}<button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-play me-1"></i>Start work</button></form>
+      {% elif a == 'on_hold' %}<form method="post" action="{% url 'request_transition' sr.pk 'on_hold' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-pause me-1"></i>Hold</button></form>
+      {% elif a == 'open' %}<form method="post" action="{% url 'request_transition' sr.pk 'open' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit">Back to pool</button></form>
+      {% elif a == 'acknowledged' %}<form method="post" action="{% url 'request_transition' sr.pk 'acknowledged' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit">Resume</button></form>
+      {% elif a == 'resolved' %}<a class="btn btn-success btn-sm" href="{% url 'request_resolve' sr.pk %}"><i class="bi bi-check-lg me-1"></i>Resolve with report</a>
+      {% elif a == 'closed' %}<form method="post" action="{% url 'request_close' sr.pk %}">{% csrf_token %}<input type="hidden" name="satisfaction_rating" value=""><button class="btn btn-outline-primary btn-sm" type="submit">Close</button></form>
+      {% elif a == 'reopened' %}<form method="post" action="{% url 'request_reopen' sr.pk %}">{% csrf_token %}<button class="btn btn-outline-danger btn-sm" type="submit">Reopen</button></form>
+      {% endif %}
+    {% empty %}<span class="small text-3">No actions available for your role at status "{{ sr.status|status_label }}".</span>{% endfor %}
+  </div></div>
+
+  <div class="panel mb-3"><div class="panel-head"><h3>Add progress note</h3></div><div class="panel-body">
+    <form method="post" action="{% url 'request_note' sr.pk %}">{% csrf_token %}{{ note_form.note }}{% for e in note_form.note.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}<button class="btn btn-outline-primary btn-sm mt-2" type="submit">Add note</button></form>
+  </div></div>
+
+  {% if record %}
+  <div class="panel mb-3"><div class="panel-head"><h3>Maintenance report</h3><span class="link text-3 small">by {{ record.technician }} · ₹{{ record.cost }}</span></div>
+  <div class="panel-body small"><div class="subtle-label">Findings</div><p class="mt-1">{{ record.inspection_findings|linebreaksbr }}</p><div class="subtle-label mt-2">Repair actions</div><p class="mt-1">{{ record.work_done|linebreaksbr }}</p>
+  {% if parts %}<div class="subtle-label mt-2">Parts used</div><ul class="mb-1 mt-1">{% for pu in parts %}<li>{{ pu.spare_part.part_no }} × {{ pu.quantity }} @ ₹{{ pu.unit_cost_at_use }}</li>{% endfor %}</ul>{% endif %}
+  {% if record.next_action %}<div class="subtle-label mt-2">Next action</div><p class="mb-0 mt-1">{{ record.next_action|linebreaksbr }}</p>{% endif %}
+  </div></div>
+  {% endif %}
+
+  <div class="panel"><div class="panel-head"><h3>Activity timeline</h3><span class="link text-3 small">{{ activities|length }} events</span></div>
+  <div class="panel-body" style="padding-top:.5rem">{% for a in activities %}
+    <div class="timeline-item"><span class="timeline-ic" style="background:{% if a.action == 'created' %}var(--info-bg);color:var(--info){% elif a.action == 'assigned' %}var(--warning-bg);color:var(--warning){% elif a.action == 'report' %}var(--success-bg);color:var(--success){% elif a.action == 'note' %}var(--info-bg);color:var(--info){% else %}var(--neutral-bg);color:var(--text-2){% endif %}"><i class="bi {% if a.action == 'created' %}bi-flag-fill{% elif a.action == 'assigned' %}bi-person-plus{% elif a.action == 'report' %}bi-file-earmark-check{% elif a.action == 'note' %}bi-chat-text{% else %}bi-arrow-left-right{% endif %}"></i></span>
+    <div><div style="font-size:.84rem"><strong>{{ a.get_action_display }}</strong>{% if a.old_status or a.new_status %} · {{ a.old_status|default:"—" }} → {{ a.new_status|default:"—" }}{% endif %}</div>
+    {% if a.note %}<div class="small text-2">{{ a.note|linebreaksbr }}</div>{% endif %}<div class="tiny text-3">{{ a.actor|default:"system" }} · {{ a.created_at|timesince }} ago</div></div></div>
+    {% empty %}<p class="small text-3 px-3 py-2">No activity yet.</p>{% endfor %}
+  </div></div>
+</div>
+</div>
+
+{% if can_assign %}
+<div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+<div class="modal-header"><h5 class="modal-title">Assign technician</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<form method="post" action="{% url 'request_assign' sr.pk %}">{% csrf_token %}
+<div class="modal-body"><div class="mb-3"><label class="form-label">Technician <span class="text-danger">*</span></label>{{ assign_form.assigned_to }}</div>
+<div class="mb-3"><label class="form-label">Deadline</label>{{ assign_form.deadline }}</div>
+<div><label class="form-label">Internal remarks</label>{{ assign_form.internal_remarks }}</div></div>
+<div class="modal-footer"><button class="btn btn-ghost" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="submit">Assign</button></div>
+</form></div></div></div>
+{% endif %}
+{% endblock %}

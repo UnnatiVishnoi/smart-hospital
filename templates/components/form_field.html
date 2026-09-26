@@ -1,0 +1,7 @@
+{# Form field group #}
+<div class="mb-3">
+  <label class="form-label" for="{{ fid|default:'f1' }}">{{ label|default:"Label" }}{% if required %} <span class="text-danger">*</span>{% endif %}</label>
+  <input id="{{ fid|default:'f1' }}" class="form-control {% if error %}is-invalid{% endif %}" placeholder="{{ placeholder|default:'' }}" value="{{ value|default:'' }}" {% if disabled %}disabled{% endif %}>
+  {% if hint %}<div class="form-text">{{ hint }}</div>{% endif %}
+  {% if error %}<div class="invalid-feedback">{{ error }}</div>{% endif %}
+</div>

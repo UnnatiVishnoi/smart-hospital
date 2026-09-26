@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'pm_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>{% if can_manage %}<a class="btn btn-primary" href="{% url 'pm_create' %}"><i class="bi bi-plus-lg me-1"></i>New schedule</a>{% endif %}</div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" name="q" value="{{ f.q }}" placeholder="Search title, asset…" style="flex:2;min-width:200px">
+  <select class="form-select" name="state"><option value="">State</option>
+    <option value="overdue" {% if f.state == 'overdue' %}selected{% endif %}>Overdue</option>
+    <option value="today" {% if f.state == 'today' %}selected{% endif %}>Due today</option>
+    <option value="upcoming" {% if f.state == 'upcoming' %}selected{% endif %}>Next 7 days</option></select>
+  <select class="form-select" name="mtype"><option value="">Type</option>
+    <option value="preventive" {% if f.mtype == 'preventive' %}selected{% endif %}>Preventive</option>
+    <option value="calibration" {% if f.mtype == 'calibration' %}selected{% endif %}>Calibration</option>
+    <option value="inspection" {% if f.mtype == 'inspection' %}selected{% endif %}>Inspection</option></select>
+  <select class="form-select" name="tech"><option value="">Technician</option>{% for t in techs %}<option value="{{ t.pk }}" {% if f.tech == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.username }}</option>{% endfor %}</select>
+  <select class="form-select" name="dept"><option value="">Dept</option>{% for d in departments %}<option value="{{ d.pk }}" {% if f.dept == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }}</option>{% endfor %}</select>
+  <label class="small text-2 d-flex align-items-center gap-1"><input type="checkbox" name="inactive" value="1" {% if f.inactive %}checked{% endif %} class="form-check-input"> Paused</label>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Apply</button>
+  <a class="btn btn-ghost" href="{% url 'pm_list' %}">Clear</a>
+</form>
+
+<div class="panel"><div class="panel-body flush">
+{% if page.object_list %}
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Schedule</th><th>Type</th><th>Next due</th><th>Technician</th><th class="text-end">Actions</th></tr></thead>
+<tbody>{% for s in page.object_list %}
+<tr><td><a href="{% url 'pm_detail' s.pk %}" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ s.title }}</a><div class="tiny text-3">{{ s.equipment.asset_tag }} · {{ s.get_schedule_type_display }}{% if not s.is_active %} · Paused{% endif %}</div></td>
+<td class="text-2">{{ s.get_maintenance_type_display }}</td>
+<td>{% if s.next_due_date < today %}<span class="badge-st danger">{{ s.next_due_date|date:"M d" }} overdue</span>{% elif s.next_due_date == today %}<span class="badge-st warning">Today</span>{% else %}<span class="text-2">{{ s.next_due_date|date:"M d, Y" }}</span>{% endif %}</td>
+<td class="text-2">{{ s.assigned_to|default:"—" }}</td>
+<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'pm_detail' s.pk %}">Open</a></td></tr>
+{% endfor %}</tbody></table></div>
+<div class="d-flex justify-content-between align-items-center p-3 border-top flex-wrap gap-2">
+<span class="small text-3">Page {{ page.number }} of {{ page.paginator.num_pages }} · {{ page.paginator.count }} schedules</span>
+<nav><ul class="pagination pagination-sm mb-0">
+{% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.previous_page_number }}">‹</a></li>{% endif %}
+<li class="page-item active"><span class="page-link">{{ page.number }}</span></li>
+{% if page.has_next %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.next_page_number }}">›</a></li>{% endif %}
+</ul></nav></div>
+{% else %}
+{% include "components/empty.html" with icon="bi-calendar-check" title="No schedules found" sub="Create the first preventive plan." %}
+{% endif %}
+</div></div>
+{% endblock %}

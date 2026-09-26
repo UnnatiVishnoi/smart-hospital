@@ -1,0 +1,36 @@
+# Secrets / env
+.env
+.env.local
+*.env
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Django / local data
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+media/
+!media/.gitkeep
+staticfiles/
+*.log
+
+# MySQL / dumps
+*.sql
+*.dump
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

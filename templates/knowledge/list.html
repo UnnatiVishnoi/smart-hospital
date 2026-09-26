@@ -1,0 +1,26 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'assistant' %}"><i class="bi bi-robot me-1"></i>Assistant</a>{% if can_manage %}<a class="btn btn-primary" href="{% url 'manual_upload' %}"><i class="bi bi-upload me-1"></i>Upload</a>{% endif %}</div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" name="q" value="{{ q }}" placeholder="Search title, manufacturer, model…" style="flex:1;min-width:220px">
+  <button class="btn btn-primary" type="submit">Apply</button>
+  <a class="btn btn-ghost" href="{% url 'manual_list' %}">Clear</a>
+</form>
+
+<div class="panel"><div class="panel-body flush">
+{% if page.object_list %}
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Document</th><th>Scope</th><th>Indexed</th><th class="text-end">Actions</th></tr></thead>
+<tbody>{% for m in page.object_list %}
+<tr><td><div style="font-weight:var(--fw-semibold)">{{ m.title }}</div><div class="tiny text-3">{{ m.manufacturer }} {{ m.model }} {{ m.version }}</div></td>
+<td class="text-2">{{ m.equipment.asset_tag|default:m.category.name|default:"Global" }}</td>
+<td>{% if m.is_indexed %}<span class="badge-st success">{{ m.chunks.count }} passages</span>{% else %}<span class="badge-st warning">Not indexed</span>{% endif %}</td>
+<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'manual_detail' m.pk %}">Open</a></td></tr>
+{% endfor %}</tbody></table></div>
+{% else %}
+{% include "components/empty.html" with icon="bi-book" title="No manuals yet" sub="Managers can upload the first approved PDF." %}
+{% endif %}
+</div></div>
+{% endblock %}

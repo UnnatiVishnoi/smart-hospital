@@ -1,0 +1,137 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ page_title }}</h1>
+    <div class="subtitle">{{ page_sub }} · <span class="badge-st teal"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-right:.3rem;animation:pulse 2s ease infinite;vertical-align:middle"></span> Live data</span></div>
+  </div>
+  <div class="actions">
+    {% if request.user.role in 'admin manager' or request.user.is_superuser %}
+    <a class="btn btn-outline-primary" href="{% url 'user_list' %}"><i class="bi bi-people me-1"></i>Manage users</a>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'profile' %}"><i class="bi bi-person me-1"></i>My profile</a>
+  </div>
+</div>
+
+<!-- Welcome section -->
+<div class="dash-welcome">
+  <div class="welcome-text">
+    <h2>Good {{ time_of_day }}{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %} <span style="font-weight:var(--fw-regular);opacity:.8">👋</span></h2>
+    <p>{{ role_summary }} {{ operational }} of {{ total }} assets running at full capacity today.</p>
+    <div class="welcome-pills">
+      <div class="welcome-pill"><span class="pill-dot" style="background:var(--teal)"></span>{{ operational }} operational</div>
+      <div class="welcome-pill"><span class="pill-dot" style="background:var(--warning)"></span>{{ under_maint }} needs attention</div>
+      <div class="welcome-pill"><span class="pill-dot" style="background:var(--medical-blue)"></span>{{ open_sr }} open tickets</div>
+      {% if overdue %}<div class="welcome-pill"><span class="pill-dot" style="background:var(--danger)"></span>{{ overdue }} overdue</div>{% endif %}
+    </div>
+  </div>
+  <div class="welcome-actions">
+    <a class="btn btn-primary" href="{% url 'request_create' %}"><i class="bi bi-plus-lg me-1"></i>Report fault</a>
+    <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.2)" href="{% url 'pm_list' %}"><i class="bi bi-calendar-check me-1"></i>View schedule</a>
+  </div>
+</div>
+
+<!-- KPI cards -->
+<div class="stat-grid stagger-children">
+  {% for kpi in kpis %}{% include "components/kpi_card.html" with kpi=kpi %}{% endfor %}
+</div>
+
+<!-- Charts row -->
+<div class="grid-2">
+  <div class="panel"><div class="panel-head"><h3>Equipment status</h3><span class="link text-3 small">Scoped to your role</span></div>
+    <div class="panel-body"><div class="chart-box sm"><canvas id="statusChart"></canvas></div></div></div>
+  <div class="panel"><div class="panel-head"><h3>Requests — recent months</h3><span class="link text-3 small">Visible requests only</span></div>
+    <div class="panel-body"><div class="chart-box sm"><canvas id="trendChart"></canvas></div></div></div>
+</div>
+
+<!-- Requests + Upcoming + Activity -->
+<div class="grid-3t">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>{% if request.user.role == 'technician' %}My assigned requests{% elif request.user.role == 'staff' %}My requests{% else %}Recent service requests{% endif %}</h3>
+      {% if recent_requests %}<a class="link text-3 small" href="{% url 'request_list' %}">View all →</a>{% endif %}
+    </div>
+    <div class="panel-body flush">
+      {% if recent_requests %}
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Ticket</th><th>Equipment</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>{% for r in recent_requests %}
+          <tr><td><a href="{% url 'request_detail' r.pk %}" style="color:var(--text);font-weight:var(--fw-semibold);text-decoration:none">{{ r.ticket_no }}</a><div class="tiny text-3">{{ r.requested_at|date:"M d, H:i" }}</div></td>
+          <td><a href="{% url 'equipment_detail' r.equipment.pk %}" style="text-decoration:none;color:var(--text)">{{ r.equipment.asset_tag }}</a><div class="tiny text-3">{{ r.equipment.name }}</div></td>
+          <td>{% include "components/badge.html" with status=r.priority %}</td>
+          <td>{% include "components/badge.html" with status=r.status %}</td>
+          <td class="text-2">{{ r.assigned_to|default:"Unassigned" }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}
+      {% include "components/empty.html" with icon="bi-ticket-detailed" title="No service requests yet" sub="Requests for your scope will appear here." %}
+      {% endif %}
+    </div>
+  </div>
+  <div>
+    <div class="panel mb-3"><div class="panel-head"><h3>Upcoming maintenance</h3><a class="link text-3 small" href="{% url 'pm_list' %}">All →</a></div>
+      <div class="panel-body" style="padding-top:.5rem">{% for u in upcoming_pm %}
+        <a href="{% url 'pm_detail' u.pk %}" class="list-row" style="color:inherit;text-decoration:none">
+          <span class="timeline-ic" style="background:{% if u.next_due_date < today %}var(--danger-bg){% else %}var(--info-bg){% endif %};color:{% if u.next_due_date < today %}var(--danger){% else %}var(--info){% endif %}"><i class="bi bi-wrench"></i></span>
+          <div style="min-width:0"><div style="font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.equipment.asset_tag }} · {{ u.title }}</div><div class="tiny text-3">{{ u.assigned_to|default:"Unassigned" }} · {{ u.get_frequency_display }}</div></div>
+          <span class="badge-st {% if u.next_due_date < today %}danger{% else %}info{% endif %} ms-auto">{{ u.next_due_date|date:"M d" }}</span>
+        </a>
+        {% empty %}
+        <div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-calendar-check"></i></div><h3 style="font-size:.9rem">Nothing scheduled</h3><p class="small text-3 mb-0">Preventive tasks for your scope will appear here.</p></div>
+      {% endfor %}</div></div>
+    <div class="panel"><div class="panel-head"><h3>Recent activity</h3></div>
+      <div class="panel-body" style="padding-top:.5rem">{% for a in activity %}
+        <div class="timeline-item">
+          <span class="timeline-ic" style="background:{% if a.action == 'created' %}var(--info-bg);color:var(--info){% elif a.action == 'assigned' %}var(--warning-bg);color:var(--warning){% elif a.action == 'resolved' %}var(--success-bg);color:var(--success){% else %}var(--neutral-bg);color:var(--text-2){% endif %}">
+            <i class="bi {% if a.action == 'created' %}bi-flag-fill{% elif a.action == 'assigned' %}bi-person-plus{% elif a.action == 'resolved' %}bi-check-circle-fill{% elif a.action == 'archived' %}bi-archive{% else %}bi-activity{% endif %}"></i>
+          </span>
+          <div><div style="font-size:.84rem">{{ a.action|title }} — {{ a.model_name }}#{{ a.object_id }}</div><div class="tiny text-3">{{ a.actor|default:"system" }} · {{ a.timestamp|timesince }} ago</div></div>
+        </div>
+        {% empty %}
+        <div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-activity"></i></div><h3 style="font-size:.9rem">No activity yet</h3><p class="small text-3 mb-0">Sign-ins and updates will be logged here.</p></div>
+      {% endfor %}</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="status-data" type="application/json">{{ status_json|safe }}</script>
+<script id="trend-data" type="application/json">{{ trend_json|safe }}</script>
+<script>
+(function(){
+  function read(id, fb){ try { return JSON.parse(document.getElementById(id).textContent); } catch(e){ return fb; } }
+  var s = read('status-data', {labels:['Operational','Under maintenance','Breakdown','Standby','Decommissioned'], data:[0,0,0,0,0]});
+  var t = read('trend-data', {labels:['No data'], data:[0]});
+
+  if(typeof Chart === 'undefined') return;
+
+  // Status doughnut
+  var sc = document.getElementById('statusChart');
+  if(sc) new Chart(sc, {
+    type:'doughnut',
+    data:{labels:s.labels, datasets:[{data:s.data, backgroundColor:['#0e9f8a','#c47b12','#c0362c','#cbd5e8','#7d8db0'], borderWidth:2, borderColor:'#fff', hoverBorderWidth:3}]},
+    options:{
+      maintainAspectRatio:false, cutout:'72%',
+      plugins:{
+        legend:{position:'bottom', labels:{boxWidth:10, padding:14, font:{size:11}, usePointStyle:true, pointStyle:'circle'}}
+      }
+    }
+  });
+
+  // Trend bar chart
+  var tc = document.getElementById('trendChart');
+  if(t) new Chart(tc, {
+    type:'bar',
+    data:{labels:t.labels, datasets:[{label:'Service requests', data:t.data, backgroundColor:'rgba(30,99,233,.85)', borderRadius:6, barPercentage:.55, hoverBackgroundColor:'#1e63e9'}]},
+    options:{
+      maintainAspectRatio:false,
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{size:11}}},
+        y:{beginAtZero:true, ticks:{precision:0, font:{size:11}}, grid:{color:'#f0f3f7'}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+})();
+</script>
+{% endblock %}

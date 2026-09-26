@@ -1,0 +1,17 @@
+{# KPI card: expects kpi={label,value,delta,tone,icon,band} #}
+{% load ui_extras %}
+<div class="kpi band-{{ kpi.band|default:kpi.tone|default:'neutral' }}">
+  <div class="kpi-top">
+    <div class="kpi-icon {{ kpi.tone|default:'neutral' }}">
+      <i class="bi {{ kpi.icon|default:'bi-grid' }}"></i>
+    </div>
+    {% if kpi.trend %}
+    <span class="small fw-medium {% if kpi.trend > 0 %}text-success{% elif kpi.trend < 0 %}text-danger{% endif %}">
+      {% if kpi.trend > 0 %}<i class="bi bi-arrow-up-short"></i>{{ kpi.trend }}%{% elif kpi.trend < 0 %}<i class="bi bi-arrow-down-short"></i>{{ kpi.trend|abs }}%{% endif %}
+    </span>
+    {% endif %}
+  </div>
+  <div class="kpi-label">{{ kpi.label }}</div>
+  <div class="kpi-value">{{ kpi.value }}</div>
+  <div class="kpi-delta">{{ kpi.delta }}</div>
+</div>

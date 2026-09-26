@@ -1,0 +1,11 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} · Total ₹{{ total|floatformat:2 }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'reports_costs_csv' %}?{{ request.GET.urlencode }}"><i class="bi bi-download me-1"></i>CSV</a><a class="btn btn-outline-primary" href="{% url 'reports' %}?{{ request.GET.urlencode }}"><i class="bi bi-bar-chart me-1"></i>Analytics</a></div></div>
+{% include "reports/_filters.html" %}
+<div class="panel"><div class="panel-body flush">
+{% if rows %}<div class="table-wrap"><table class="table"><thead><tr><th>Technician</th><th class="text-end">Open</th><th class="text-end">Resolved</th><th class="text-end">Avg repair</th><th class="text-end">PM done</th><th class="text-end">Job cost</th></tr></thead>
+<tbody>{% for r in rows %}<tr><td><strong>{{ r.tech.get_full_name|default:r.tech.username }}</strong><div class="tiny text-3">@{{ r.tech.username }}</div></td><td class="text-end">{{ r.open }}</td><td class="text-end">{{ r.resolved }}</td><td class="text-end">{% if r.avg_h %}{{ r.avg_h }} h{% else %}—{% endif %}</td><td class="text-end">{{ r.pm_done }}</td><td class="text-end">₹{{ r.cost|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% include "components/empty.html" with icon="bi-people" title="No technician activity" sub="Assignments and resolutions in range will appear here." %}{% endif %}
+</div></div>
+{% endblock %}

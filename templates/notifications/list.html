@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} · <span class="badge-st info">{{ unread_n }} unread</span></div></div>
+<div class="actions"><form method="post" action="{% url 'notification_read_all' %}">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-check-all me-1"></i>Mark all read</button></form></div></div>
+
+<form class="filterbar mb-4" method="get">
+  <select class="form-select" name="type"><option value="">Type: all</option>
+    <option value="breakdown" {% if f.type == 'breakdown' %}selected{% endif %}>Breakdown</option>
+    <option value="assignment" {% if f.type == 'assignment' %}selected{% endif %}>Assignment</option>
+    <option value="pm_due" {% if f.type == 'pm_due' %}selected{% endif %}>PM due</option>
+    <option value="pm_upcoming" {% if f.type == 'pm_upcoming' %}selected{% endif %}>PM upcoming</option>
+    <option value="pm_overdue" {% if f.type == 'pm_overdue' %}selected{% endif %}>PM overdue</option>
+    <option value="warranty" {% if f.type == 'warranty' %}selected{% endif %}>Warranty</option>
+    <option value="resolved" {% if f.type == 'resolved' %}selected{% endif %}>Resolved</option>
+    <option value="system" {% if f.type == 'system' %}selected{% endif %}>System</option></select>
+  <label class="small text-2 d-flex align-items-center gap-1"><input type="checkbox" name="unread" value="1" {% if f.unread %}checked{% endif %} class="form-check-input"> Unread only</label>
+  <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+  <a class="btn btn-ghost btn-sm" href="{% url 'notification_list' %}">Clear</a>
+</form>
+
+<div class="panel"><div class="panel-body" style="padding-top:.5rem">
+{% for n in page.object_list %}
+<a href="{% url 'notification_read' n.pk %}" class="list-row" style="color:inherit;text-decoration:none;background:{% if not n.is_read %}var(--medical-blue-soft){% endif %}">
+  <span class="timeline-ic" style="background:{% if n.is_read %}var(--neutral-bg);color:var(--text-2){% else %}var(--info-bg);color:var(--info){% endif %}"><i class="bi bi-bell"></i></span>
+  <div style="min-width:0"><div style="font-size:.85rem;font-weight:{% if n.is_read %}var(--fw-medium){% else %}var(--fw-bold){% endif %}">{{ n.title }} <span class="badge-st neutral">{{ n.get_type_display }}</span></div><div class="small text-2">{{ n.message|truncatewords:20 }}</div><div class="tiny text-3">{{ n.created_at|timesince }} ago</div></div>
+  {% if not n.is_read %}<form method="post" action="{% url 'notification_read' n.pk %}" class="ms-auto" onclick="event.stopPropagation()">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Open</button></form>{% endif %}
+</a>
+{% empty %}{% include "components/empty.html" with icon="bi-bell" title="No notifications" sub="Reminders and updates will appear here." %}{% endfor %}
+</div></div>
+{% if page.has_other_pages %}<div class="d-flex justify-content-end mt-3"><nav><ul class="pagination pagination-sm mb-0">
+{% if page.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}&type={{ f.type }}">‹</a></li>{% endif %}
+<li class="page-item active"><span class="page-link">{{ page.number }} / {{ page.paginator.num_pages }}</span></li>
+{% if page.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}&type={{ f.type }}">›</a></li>{% endif %}
+</ul></nav></div>{% endif %}
+{% endblock %}

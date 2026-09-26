@@ -1,0 +1,31 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:680px"><div class="panel-body">
+  <form method="post" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="row g-3">
+      {% if mode == 'create' %}
+      <div class="col-md-6"><label class="form-label">Username <span class="text-danger">*</span></label>{{ form.username }}{% for e in form.username.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Email <span class="text-danger">*</span></label>{{ form.email }}{% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      {% else %}
+      <div class="col-12"><label class="form-label">Email <span class="text-danger">*</span></label>{{ form.email }}{% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      {% endif %}
+      <div class="col-md-6"><label class="form-label">First name</label>{{ form.first_name }}{% for e in form.first_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Last name</label>{{ form.last_name }}{% for e in form.last_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Role <span class="text-danger">*</span></label>{{ form.role }}{% for e in form.role.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Department</label>{{ form.department }}{% for e in form.department.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Phone</label>{{ form.phone }}{% for e in form.phone.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Status</label><div class="form-check mt-2">{{ form.is_active }}<label class="form-check-label ms-1" for="{{ form.is_active.id_for_label }}" style="font-size:var(--fs-14)">Active account</label></div></div>
+      {% if mode == 'create' %}
+      <div class="col-md-6"><label class="form-label">Password <span class="text-danger">*</span></label>{{ form.password1 }}{% for e in form.password1.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      <div class="col-md-6"><label class="form-label">Confirm password <span class="text-danger">*</span></label>{{ form.password2 }}{% for e in form.password2.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2 mt-4">
+      <button class="btn btn-primary" type="submit">{% if mode == 'create' %}<i class="bi bi-plus-lg me-1"></i>Create user{% else %}<i class="bi bi-check-lg me-1"></i>Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'user_list' %}">Cancel</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

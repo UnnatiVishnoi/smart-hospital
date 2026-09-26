@@ -1,0 +1,129 @@
+{% extends "layouts/app.html" %}
+{% load static %}
+{% block extra_css %}<link href="{% static 'css/chat.css' %}" rel="stylesheet">{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} ·
+  {% if llm_on %}<span class="mode-badge llm"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block"></span> LLM on</span>{% else %}<span class="mode-badge extractive">Manual excerpts</span>{% endif %}
+</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'manual_list' %}"><i class="bi bi-book me-1"></i>Manuals</a></div></div>
+
+<div class="chat-layout">
+<aside class="chat-side">
+  <div class="chat-side-head">
+    <div class="logo-sm"><i class="bi bi-robot"></i></div>
+    <span>Conversations</span>
+  </div>
+  <form method="post" action="{% url 'assistant_new' %}" class="d-flex gap-2 mb-2">{% csrf_token %}
+    <select class="form-select form-select-sm" name="equipment" title="Focus on equipment (optional)" aria-label="Focus equipment">
+      <option value="">All equipment</option>
+      {% for e in equipment_list %}<option value="{{ e.pk }}" {% if active and active.equipment_id == e.pk %}selected{% endif %}>{{ e.asset_tag }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary btn-sm" type="submit" title="New conversation"><i class="bi bi-plus-lg"></i></button>
+  </form>
+  <div class="d-flex flex-column gap-1" style="max-height:280px;overflow-y:auto">
+  {% for c in convos %}
+    <a class="convo {% if active and c.pk == active.pk %}active{% endif %}" href="{% url 'assistant_detail' c.pk %}"><i class="bi bi-chat-text"></i><span>{{ c.title }}</span></a>
+  {% empty %}<p class="small text-3 mt-2">No conversations yet.</p>{% endfor %}
+  </div>
+  {% if active %}
+  <div class="chat-archives">
+    <form method="post" action="{% url 'assistant_archive' active.pk %}" class="flex-1">{% csrf_token %}<button class="btn btn-sm btn-outline-primary w-100" type="submit">Archive</button></form>
+    <form method="post" action="{% url 'assistant_clear' %}" class="flex-1">{% csrf_token %}<button class="btn btn-sm btn-outline-danger w-100" type="submit">Clear</button></form>
+  </div>
+  {% if active.equipment %}<div class="tiny text-3 mt-2"><i class="bi bi-funnel me-1"></i>Focused: {{ active.equipment.asset_tag }}</div>{% endif %}
+  {% endif %}
+</aside>
+
+<div class="chat-main">
+  <div class="chat-scroll" id="chatScroll">
+    {% if not active %}
+    <div class="chat-welcome">
+      <div class="welcome-icon"><i class="bi bi-robot"></i></div>
+      <h3>Start a maintenance conversation</h3>
+      <p>Pick equipment (optional), press +, and ask about maintenance procedures. Answers cite the manual and page number.</p>
+    </div>
+    {% endif %}
+    {% for m in messages %}
+    <div class="msg {% if m.role == 'user' %}user{% else %}bot{% endif %}" data-role="{{ m.role }}">
+      {{ m.content|linebreaksbr }}
+      {% if m.role == 'assistant' and m.sources %}
+      <div class="mt-1">{% for s in m.sources %}<div class="src-card"><i class="bi bi-file-earmark-pdf"></i><span><strong>{{ s.manual }}</strong> &middot; p. {{ s.page_no|default:"?" }}</span></div>{% endfor %}</div>
+      {% endif %}
+      {% if m.role == 'assistant' and m.latency_ms %}<div class="msg-meta">{{ m.latency_ms }} ms</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% if active %}
+  <div class="suggest-row">{% for s in suggested %}<button class="suggest-chip" type="button" data-q="{{ s }}">{{ s }}</button>{% endfor %}</div>
+  <form class="composer" id="composer">{% csrf_token %}
+    <textarea class="form-control" id="qInput" rows="2" maxlength="2000" placeholder="Ask about maintenance, calibration, error codes…" aria-label="Your question"></textarea>
+    <button class="btn btn-primary" id="sendBtn" type="submit" aria-label="Send message"><i class="bi bi-send"></i></button>
+  </form>
+  {% endif %}
+</div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% if active %}
+<script>
+(function(){
+  var scroll = document.getElementById('chatScroll');
+  scroll.scrollTop = scroll.scrollHeight;
+  function csrf(){ var el = document.querySelector('#composer input[name=csrfmiddlewaretoken]'); return el ? el.value : ''; }
+  function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function addMsg(role, html, sources, meta){
+    var div = document.createElement('div');
+    div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+    div.innerHTML = html;
+    if(sources && sources.length){
+      var w = document.createElement('div'); w.className = 'mt-1';
+      sources.forEach(function(s){
+        var c = document.createElement('div'); c.className = 'src-card';
+        c.innerHTML = '<i class="bi bi-file-earmark-pdf"></i><span><strong>' + esc(s.manual || 'Manual') + '</strong> · p. ' + esc(String(s.page_no || '?')) + '</span>';
+        w.appendChild(c);
+      });
+      div.appendChild(w);
+    }
+    if(meta){ var m = document.createElement('div'); m.className = 'msg-meta'; m.textContent = meta; div.appendChild(m); }
+    scroll.appendChild(div);
+    requestAnimationFrame(function(){ scroll.scrollTop = scroll.scrollHeight; });
+    return div;
+  }
+  function fmt(text){
+    var parts = esc(text).split(/\n{2,}/).map(function(p){
+      if(/^\s*&gt;/.test(p)) return '<blockquote>' + p.replace(/^(\s*&gt;\s?)/gm, '') + '</blockquote>';
+      return '<p class="mb-1">' + p.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>';
+    });
+    return parts.join('');
+  }
+  var form = document.getElementById('composer'), input = document.getElementById('qInput'), btn = document.getElementById('sendBtn');
+  document.querySelectorAll('.suggest-chip').forEach(function(ch){
+    ch.addEventListener('click', function(){ input.value = ch.dataset.q; input.focus(); });
+  });
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var q = input.value.trim();
+    if(!q) return;
+    input.value = '';
+    addMsg('user', '<p class="mb-0">' + esc(q) + '</p>');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    var typing = addMsg('bot', '<span class="typing"><span></span><span></span><span></span></span>');
+    try {
+      var r = await fetch("{% url 'assistant_ask' active.pk %}", {
+        method: 'POST', headers: {'X-CSRFToken': csrf(), 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'q=' + encodeURIComponent(q)});
+      var j = await r.json();
+      typing.remove();
+      if(!r.ok){ addMsg('bot', '<p class="mb-0 text-danger">' + esc(j.error || 'Request failed.') + '</p>'); }
+      else {
+        var note = j.mode === 'llm' ? ' · AI answer' : (j.mode === 'extractive' ? ' · manual excerpts' : '');
+        addMsg('bot', fmt(j.answer), j.sources, (j.latency_ms || 0) + ' ms' + note);
+      }
+    } catch(err){ typing.remove(); addMsg('bot', '<p class="mb-0 text-danger">Network error — please retry.</p>'); }
+    btn.disabled = false; btn.innerHTML = '<i class="bi bi-send"></i>'; input.focus();
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

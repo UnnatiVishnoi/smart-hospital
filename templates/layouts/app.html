@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block body %}
+<a class="skip-link" href="#mainContent">Skip to main content</a>
+<div class="app-shell" id="appShell">
+  <div class="scrim" id="scrim" role="button" tabindex="-1" aria-label="Close menu"></div>
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" fill="#fff"/><path d="M7 12h3l1.5-3 2 6L15 12h2" stroke="#1e63e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div><div class="brand-name">{{ PRODUCT_NAME|default:"MediServe" }}</div><div class="brand-sub">{{ PRODUCT_SUB|default:"Smart Hospital Servicing" }}</div></div>
+    </div>
+
+    <div class="nav-section" id="nav-workspace">Workspace</div>
+    <nav aria-labelledby="nav-workspace">
+      <a class="side-link {% if active_nav == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      {% if request.user.is_authenticated and request.user.role == 'admin' or request.user.is_superuser %}
+      <a class="side-link {% if active_nav == 'users' %}active{% endif %}" href="{% url 'user_list' %}"><i class="bi bi-people"></i><span>Users</span></a>
+      {% endif %}
+      <a class="side-link {% if active_nav == 'profile' %}active{% endif %}" href="{% url 'profile' %}"><i class="bi bi-person"></i><span>My profile</span></a>
+    </nav>
+
+    <div class="nav-section" id="nav-equipment">Equipment</div>
+    <nav aria-labelledby="nav-equipment">
+      <a class="side-link {% if active_nav == 'equipment' %}active{% endif %}" href="{% url 'equipment_overview' %}"><i class="bi bi-speedometer2"></i><span>Overview</span></a>
+      <a class="side-link" href="{% url 'equipment_list' %}"><i class="bi bi-cpu"></i><span>Inventory</span></a>
+      <a class="side-link" href="{% url 'equipment_departments' %}"><i class="bi bi-diagram-3"></i><span>Departments</span></a>
+    </nav>
+
+    <div class="nav-section" id="nav-service">Service</div>
+    <nav aria-labelledby="nav-service">
+      <a class="side-link {% if active_nav == 'requests' %}active{% endif %}" href="{% url 'request_list' %}"><i class="bi bi-ticket-detailed"></i><span>Requests</span></a>
+      <a class="side-link" href="{% url 'request_create' %}"><i class="bi bi-plus-circle"></i><span>Report fault</span></a>
+      <a class="side-link {% if active_nav == 'notifications' %}active{% endif %}" href="{% url 'notification_list' %}"><i class="bi bi-bell"></i><span>Notifications</span>
+        {% if notif_unread %}<span class="badge">{{ notif_unread }}</span>{% endif %}
+      </a>
+    </nav>
+
+    <div class="nav-section" id="nav-pm">Preventive care</div>
+    <nav aria-labelledby="nav-pm">
+      <a class="side-link {% if active_nav == 'pm' %}active{% endif %}" href="{% url 'pm_dashboard' %}"><i class="bi bi-calendar-check"></i><span>Dashboard</span></a>
+      <a class="side-link" href="{% url 'pm_list' %}"><i class="bi bi-clipboard-check"></i><span>Schedules</span></a>
+    </nav>
+
+    <div class="nav-section" id="nav-ai">AI assistant</div>
+    <nav aria-labelledby="nav-ai">
+      <a class="side-link {% if active_nav == 'assistant' %}active{% endif %}" href="{% url 'assistant' %}"><i class="bi bi-robot"></i><span>Chat</span></a>
+      <a class="side-link {% if active_nav == 'manuals' %}active{% endif %}" href="{% url 'manual_list' %}"><i class="bi bi-book"></i><span>Manuals</span></a>
+    </nav>
+
+    <div class="nav-section" id="nav-reports">Reports</div>
+    <nav aria-labelledby="nav-reports">
+      <a class="side-link {% if active_nav == 'reports' %}active{% endif %}" href="{% url 'reports' %}"><i class="bi bi-bar-chart"></i><span>Analytics</span></a>
+    </nav>
+
+    <div class="side-foot">
+      {% if request.user.is_authenticated %}
+      <div class="demo-pill"><i class="bi bi-shield-check"></i><span>{{ request.user.get_role_display|default:request.user.role }} · {{ request.user.username }}</span></div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar" id="topbar">
+      <button class="icon-btn d-lg-none" id="mobileBtn" aria-label="Open menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+      <button class="icon-btn d-none d-lg-inline-grid" id="collapseBtn" aria-label="Collapse sidebar"><i class="bi bi-layout-sidebar"></i></button>
+      <div class="search-wrap" role="search">
+        <i class="bi bi-search"></i>
+        <input class="form-control" id="globalSearch" type="search" placeholder="Search equipment, tickets, manuals…" autocomplete="off" aria-label="Global search">
+        <span class="shortcut-hint">⌘K</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn d-lg-none" id="mobileSearchBtn" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchWrap"><i class="bi bi-search"></i></button>
+        <div class="dropdown">
+          <button class="icon-btn position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+            <i class="bi bi-bell"></i>
+            {% if notif_unread %}<span class="notif-badge">{{ notif_unread }}</span>{% endif %}
+          </button>
+          <div class="dropdown-menu dropdown-menu-end p-0 notif-dropdown">
+            <div class="notif-head"><strong>Notifications</strong><a href="{% url 'notification_list' %}" class="btn btn-ghost btn-sm small ms-auto">View all</a></div>
+            {% for n in notif_recent %}
+            <a href="{% url 'notification_read' n.pk %}" class="notif-item" style="text-decoration:none">
+              <span class="timeline-ic" style="background:{% if n.is_read %}var(--neutral-bg);color:var(--text-2){% else %}var(--info-bg);color:var(--info){% endif %}"><i class="bi bi-bell"></i></span>
+              <div style="min-width:0;flex:1"><div style="font-size:.83rem;font-weight:600">{{ n.title|truncatewords:8 }}</div><div class="tiny text-3">{{ n.created_at|timesince }} ago</div></div>
+              {% if not n.is_read %}<span class="notif-dot"></span>{% endif %}
+            </a>
+            {% empty %}<div class="p-3 small text-3">No notifications yet.</div>{% endfor %}
+          </div>
+        </div>
+        {% if request.user.is_authenticated %}
+        <div class="dropdown nav-actions-dropdown">
+          <button class="icon-btn d-none d-md-flex" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+            <span class="avatar" style="width:32px;height:32px;font-size:var(--fs-12)">{{ request.user.first_name|slice:":1"|default:request.user.username|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end">
+            <li><div class="dropdown-header">Signed in as<br><strong style="color:var(--text)">{{ request.user.email|default:request.user.username }}</strong></div></li>
+            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'password_change' %}"><i class="bi bi-key"></i>Change password</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right text-danger"></i>Sign out</button></form></li>
+          </div>
+        </div>
+        <div class="avatar-d-none d-md-flex">
+          <a href="{% url 'profile' %}" class="avatar" style="width:32px;height:32px;font-size:var(--fs-12);text-decoration:none">{{ request.user.first_name|slice:":1"|default:request.user.username|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</a>
+        </div>
+        <button class="icon-btn d-md-none" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="User menu">
+          <span class="avatar" style="width:32px;height:32px;font-size:var(--fs-12)">{{ request.user.first_name|slice:":1"|default:request.user.username|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end d-md-none">
+          <li><h6 class="dropdown-header">{{ request.user.get_full_name|default:request.user.username }}</h6></li>
+          <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'password_change' %}"><i class="bi bi-key me-2"></i>Change password</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right text-danger me-2"></i>Sign out</button></form></li>
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="mobile-search" id="mobileSearchWrap">
+      <div class="search-wrap mobile-show" role="search" style="display:block;max-width:none">
+        <i class="bi bi-search"></i>
+        <input class="form-control" type="search" placeholder="Search equipment, tickets, manuals…" aria-label="Search" autocomplete="off">
+      </div>
+    </div>
+
+    <main class="content" id="mainContent" tabindex="-1">
+      {% if breadcrumbs %}
+      <nav aria-label="breadcrumb"><ol class="breadcrumb">{% for c in breadcrumbs %}{% if c.url and not forloop.last %}<li class="breadcrumb-item"><a href="{{ c.url }}">{{ c.label }}</a></li>{% else %}<li class="breadcrumb-item active">{{ c.label }}</li>{% endif %}{% endfor %}</ol></nav>
+      {% endif %}
+      {% if messages %}
+      <div class="d-flex flex-column gap-2 mb-3" role="status">
+        {% for m in messages %}
+        <div class="alert {% if m.tags == 'error' %}alert-danger{% elif m.tags == 'success' %}alert-success{% elif m.tags == 'info' %}alert-primary{% else %}alert-secondary{% endif %} alert-dismissible fade show mb-0" role="alert">
+          {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+      <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    </main>
+  </div>
+</div>
+{% endblock %}

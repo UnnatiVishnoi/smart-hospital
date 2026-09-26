@@ -1,0 +1,33 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'reports' %}"><i class="bi bi-bar-chart me-1"></i>Analytics</a></div></div>
+
+<form class="filterbar mb-4" method="get">
+  <select class="form-select" name="equipment" style="flex:1;min-width:240px"><option value="">Select equipment…</option>{% for e in equipment_list %}<option value="{{ e.pk }}" {% if sel and sel.pk == e.pk %}selected{% endif %}>{{ e.asset_tag }} · {{ e.name }}</option>{% endfor %}</select>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Open history</button>
+</form>
+
+{% if sel %}
+<div class="grid-2">
+<div class="panel"><div class="panel-head"><h3>{{ sel.asset_tag }}</h3><a class="link" href="{% url 'equipment_detail' sel.pk %}">Asset record →</a></div>
+<div class="panel-body"><div class="row g-3 small">
+<div class="col-4"><div class="subtle-label">Jobs</div><strong>{{ jobs }}</strong></div>
+<div class="col-4"><div class="subtle-label">Downtime</div><strong>{{ downtime }} h</strong></div>
+<div class="col-4"><div class="subtle-label">Spend</div><strong>₹{{ total|floatformat:2 }}</strong></div>
+<div class="col-6"><div class="subtle-label">Labour</div>₹{{ labour|floatformat:2 }}</div>
+<div class="col-6"><div class="subtle-label">Parts</div>₹{{ parts|floatformat:2 }}</div>
+</div></div></div>
+<div class="panel"><div class="panel-head"><h3>Requests ({{ reqs|length }})</h3></div><div class="panel-body flush">
+{% if reqs %}<div class="table-wrap"><table class="table"><thead><tr><th>Ticket</th><th>Status</th><th>Raised</th></tr></thead>
+<tbody>{% for r in reqs|slice:":8" %}<tr><td><strong>{{ r.ticket_no }}</strong></td><td>{% include "components/badge.html" with status=r.status %}</td><td class="text-2">{{ r.requested_at|date:"M d, Y" }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="small text-3 px-3 py-2">No requests recorded for this asset.</p>{% endif %}
+</div></div>
+</div>
+<div class="panel mt-4"><div class="panel-head"><h3>Maintenance jobs ({{ recs|length }})</h3></div><div class="panel-body flush">
+{% if recs %}<div class="table-wrap"><table class="table"><thead><tr><th>Completed</th><th>Type</th><th>Technician</th><th>Work</th><th class="text-end">Cost</th></tr></thead>
+<tbody>{% for r in recs %}<tr><td class="text-2">{{ r.completed_at|date:"M d, Y" }}</td><td>{% include "components/badge.html" with status=r.maintenance_type %}</td><td class="text-2">{{ r.technician|default:"—" }}</td><td>{{ r.work_done|truncatewords:12 }}</td><td class="text-end">₹{{ r.cost }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% include "components/empty.html" with title="No jobs yet" sub="Completed maintenance will appear here." %}{% endif %}
+</div></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "layouts/auth.html" %}
+{% load static %}
+{% block auth_content %}
+<div class="auth-wrap">
+  <!-- Decorative grid + glow -->
+  <div class="auth-brand-grid" aria-hidden="true"></div>
+  <div class="auth-brand-glow glow-1" aria-hidden="true"></div>
+  <div class="auth-brand-glow glow-2" aria-hidden="true"></div>
+
+  <!-- Brand side -->
+  <div class="auth-brand">
+    <div class="brand-area">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+          <rect x="2" y="2" width="20" height="20" rx="6" fill="#fff"/>
+          <path d="M7 12h3l1.5-3 2 6L15 12h2" stroke="#1e63e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">{{ PRODUCT_NAME|default:"MediServe" }}</div>
+        <div class="brand-sub">{{ PRODUCT_SUB|default:"Smart Hospital Servicing" }}</div>
+      </div>
+    </div>
+
+    <div class="auth-brand-content">
+      <div class="eyebrow"><span class="pulse"></span> Healthcare-grade security</div>
+      <h1>
+        Biomedical maintenance,<br>
+        <span class="highlight">uptime &amp; compliance</span><br>
+        in one calm workspace.
+      </h1>
+      <p>Role-based access for administrators, managers, technicians and hospital staff. Every action logged. Every session secured.</p>
+
+      <div class="auth-feature-grid">
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-shield-check"></i></div>
+          <div class="feature-text"><div class="feature-title">Role-based access</div><div class="feature-desc">4 roles with server-side enforcement</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-clock-history"></i></div>
+          <div class="feature-text"><div class="feature-title">Full audit trail</div><div class="feature-desc">Every change is tracked</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-robot"></i></div>
+          <div class="feature-text"><div class="feature-title">AI assistant</div><div class="feature-desc">Manual excerpts + optional LLM</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-calendar-check"></i></div>
+          <div class="feature-text"><div class="feature-title">PM scheduling</div><div class="feature-desc">Preventive maintenance automation</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-brand-foot">Secure role-based access &middot; {{ PRODUCT_NAME|default:"MediServe" }}</div>
+  </div>
+
+  <!-- Card side -->
+  <div class="auth-card-wrap">
+    <div class="auth-card">
+      <div class="lock-mark"><i class="bi bi-lock-fill"></i></div>
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Sign in to the hospital workspace.</p>
+
+      {% if messages %}{% for m in messages %}
+        <div class="alert {% if m.tags == 'error' %}alert-danger{% else %}alert-{{ m.tags|default:'info' }}{% endif %} py-2 small">{{ m }}</div>
+      {% endfor %}{% endif %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2 small">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+      {% endif %}
+
+      <form method="post" novalidate id="loginForm" class="auth-form">
+        {% csrf_token %}
+        <div class="form-row">
+          <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+          <div class="field-wrap">
+            <i class="bi bi-person input-ic"></i>
+            {{ form.username }}
+          </div>
+          {% for e in form.username.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+          <div class="field-wrap password-wrap">
+            <i class="bi bi-key input-ic"></i>
+            {{ form.password }}
+            <button type="button" class="toggle-pw" aria-label="Toggle password visibility" onclick="this.previousElementSibling.previousElementSibling.type=this.previousElementSibling.previousElementSibling.type==='password'?'text':'password'">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <input type="hidden" name="next" value="{{ next|default:'/' }}">
+        <div class="auth-extras">
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="remember"><label class="form-check-label" for="remember">Remember me</label></div>
+        </div>
+        <button class="btn btn-primary w-100" type="submit" id="loginBtn"><i class="bi bi-box-arrow-in-right me-1"></i>Sign in</button>
+      </form>
+
+      <div class="info-pill"><i class="bi bi-info-circle"></i><span>Inactive accounts are blocked. Ask an admin for access.</span></div>
+
+      <div class="text-center mt-3 small">No account yet? <a href="{% url 'register' %}">Create one with your role</a></div>
+
+      <div class="auth-foot">
+        <div class="role-pills">
+          <span class="role-pill">Admin</span>
+          <span class="role-pill">Manager</span>
+          <span class="role-pill">Technician</span>
+          <span class="role-pill">Staff</span>
+        </div>
+        {{ PRODUCT_NAME|default:"MediServe" }} &middot; Smart Hospital Servicing
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(){
+  var b = document.getElementById('loginBtn');
+  b.disabled = true;
+  b.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Signing in…';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'equipment_list' %}"><i class="bi bi-table me-1"></i>Inventory</a><a class="btn btn-outline-primary" href="{% url 'equipment_departments' %}"><i class="bi bi-diagram-3 me-1"></i>By department</a>{% if request.user.role in 'admin manager' or request.user.is_superuser %}<a class="btn btn-primary" href="{% url 'equipment_add' %}"><i class="bi bi-plus-lg me-1"></i>Add equipment</a>{% endif %}</div></div>
+
+<div class="stat-grid stagger-children">{% for kpi in kpis %}{% include "components/kpi_card.html" with kpi=kpi %}{% endfor %}</div>
+
+<div class="grid-2">
+  <div class="panel"><div class="panel-head"><h3>Fleet status</h3><span class="link text-3 small">Active assets in your scope</span></div>
+    <div class="panel-body"><div class="chart-box sm"><canvas id="eqStatus"></canvas></div></div></div>
+  <div class="panel"><div class="panel-head"><h3>Department load</h3><a class="link" href="{% url 'equipment_departments' %}">View all</a></div>
+    <div class="panel-body flush">{% if dept_rows %}
+      <div class="table-wrap"><table class="table"><thead><tr><th>Department</th><th>Total</th><th>Health</th></tr></thead>
+      <tbody>{% for d in dept_rows %}<tr><td><strong>{{ d.department__name }}</strong><div class="tiny text-3">{{ d.department__code }}</div></td><td><strong>{{ d.total }}</strong></td><td>{% if d.down %}<span class="badge-st danger">{{ d.down }} need attention</span>{% else %}<span class="badge-st success">Healthy</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+      {% else %}{% include "components/empty.html" with title="No departments yet" sub="Add equipment to populate this view." %}{% endif %}
+    </div></div>
+</div>
+
+<div class="grid-3t">
+  <div class="panel"><div class="panel-head"><h3>Attention queue</h3><a class="link text-3 small" href="{% url 'equipment_list' %}?status=breakdown">All breakdowns</a></div>
+    <div class="panel-body" style="padding-top:.5rem">{% for e in attention_list %}
+      <a href="{% url 'equipment_detail' e.pk %}" class="list-row" style="color:inherit">
+        <span class="timeline-ic" style="background:var(--danger-bg);color:var(--danger)"><i class="bi bi-tools"></i></span>
+        <div style="min-width:0"><div style="font-size:.84rem;font-weight:600">{{ e.asset_tag }} · {{ e.name }}</div><div class="tiny text-3">{{ e.department.code }} · {{ e.get_criticality_display }}</div></div>
+        <span class="badge-st danger ms-auto">{{ e.get_status_display }}</span>
+      </a>
+      {% empty %}<div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-check-circle"></i></div><h3 style="font-size:.9rem">Fleet healthy</h3><p class="small text-3 mb-0">No breakdowns in your scope.</p></div>{% endfor %}
+    </div></div>
+  <div class="panel"><div class="panel-head"><h3>Recently added</h3><a class="link text-3 small" href="{% url 'equipment_list' %}?sort=-purchase_date">Inventory</a></div>
+    <div class="panel-body" style="padding-top:.5rem">{% for e in recent %}
+      <a href="{% url 'equipment_detail' e.pk %}" class="list-row" style="color:inherit">
+        <span class="timeline-ic" style="background:var(--neutral-bg);color:var(--text-2)"><i class="bi bi-cpu"></i></span>
+        <div style="min-width:0"><div style="font-size:.84rem;font-weight:600">{{ e.asset_tag }}</div><div class="tiny text-3">{{ e.name }} · {{ e.department.code }}</div></div>
+        <span class="badge-st neutral ms-auto">{{ e.purchase_date|date:"M Y" }}</span>
+      </a>
+      {% empty %}<div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-inbox"></i></div><h3 style="font-size:.9rem">No assets yet</h3><p class="small text-3 mb-0">Register the first device.</p></div>{% endfor %}
+    </div></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script id="eq-status" type="application/json">{{ status_json|safe }}</script>
+<script>(function(){try{var s=JSON.parse(document.getElementById('eq-status').textContent);}catch(e){return;}if(typeof Chart==='undefined')return;var el=document.getElementById('eqStatus');if(el)new Chart(el,{type:'doughnut',data:{labels:s.labels,datasets:[{data:s.data,backgroundColor:['#0e9f8a','#c47b12','#c0362c','#cbd5e8','#7d8db0'],borderWidth:2,borderColor:'#fff',hoverBorderWidth:3}]},options:{maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,font:{size:11},usePointStyle:true,pointStyle:'circle'}}}}})})();</script>
+{% endblock %}

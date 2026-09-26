@@ -1,0 +1,9 @@
+{# Status badge: exact-match tones + humanized label #}
+{% load ui_extras %}
+{% with s=status|lower %}
+{% if s == 'operational' or s == 'closed' or s == 'resolved' or s == 'success' or s == 'active' or s == 'completed' or s == 'valid' or s == 'healthy' %}<span class="badge-st success">{{ status|status_label }}</span>
+{% elif s == 'under_maintenance' or s == 'acknowledged' or s == 'on_hold' or s == 'reopened' or s == 'high' or s == 'warranty' or s == 'expiring' or s == 'warning' or s == 'pending' or s == 'pm_overdue' %}<span class="badge-st warning">{{ status|status_label }}</span>
+{% elif s == 'breakdown' or s == 'open' or s == 'overdue' or s == 'emergency' or s == 'critical' or s == 'danger' or s == 'failed' or s == 'expired' %}<span class="badge-st danger">{{ status|status_label }}</span>
+{% elif s == 'in_progress' or s == 'calibration' or s == 'inspection' or s == 'preventive' or s == 'assignment' or s == 'assigned' or s == 'pm_due' or s == 'pm_upcoming' or s == 'info' or s == 'due' %}<span class="badge-st info">{{ status|status_label }}</span>
+{% else %}<span class="badge-st neutral">{{ status|status_label }}</span>{% endif %}
+{% endwith %}

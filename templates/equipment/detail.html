@@ -1,0 +1,54 @@
+{% extends "layouts/app.html" %}
+{% load ui_extras %}
+{% block content %}
+<div class="page-head"><div><h1>{{ eq.asset_tag }}</h1><div class="subtitle">{{ eq.name }} · {% include "components/badge.html" with status=eq.status %} {% include "components/badge.html" with status=eq.criticality %} {% if not eq.is_active %}<span class="badge-st neutral">Archived</span>{% endif %}</div></div>
+<div class="actions">
+  {% if eq.image %}<img src="{% url 'equipment_qr' eq.pk %}" alt="QR code for {{ eq.asset_tag }}" width="64" height="64" style="border:1px solid var(--border);border-radius:var(--r-10);background:#fff">{% endif %}
+  {% if can_manage and eq.is_active %}<a class="btn btn-outline-primary" href="{% url 'equipment_edit' eq.pk %}"><i class="bi bi-pencil me-1"></i>Edit</a>{% endif %}
+  {% if can_archive and eq.is_active %}<a class="btn btn-outline-danger" href="{% url 'equipment_archive' eq.pk %}">Archive</a>{% endif %}
+  {% if can_archive and not eq.is_active %}<form method="post" action="{% url 'equipment_restore' eq.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-primary" type="submit">Restore</button></form>{% endif %}
+</div></div>
+
+<div class="grid-2">
+<div class="panel"><div class="panel-head"><h3>Asset details</h3><span class="badge-st neutral">{{ eq.category.name }}</span></div>
+<div class="panel-body">
+{% if eq.image %}<img src="{{ eq.image.url }}" alt="{{ eq.name }}" style="width:100%;max-height:220px;object-fit:cover;border-radius:var(--r-10);border:1px solid var(--border)" class="mb-3">{% endif %}
+<div class="row g-3 small">
+<div class="col-6"><div class="subtle-label">Manufacturer</div><strong>{{ eq.manufacturer }}</strong></div>
+<div class="col-6"><div class="subtle-label">Model / Serial</div><strong>{{ eq.model_no|default:"—" }}</strong><div class="text-2">{{ eq.serial_no }}</div></div>
+<div class="col-6"><div class="subtle-label">Department</div><strong>{{ eq.department.name }}</strong><div class="text-2">{{ eq.location_detail|default:eq.department.code }}</div></div>
+<div class="col-6"><div class="subtle-label">Vendor</div><strong>{{ eq.vendor|default:"—" }}</strong></div>
+<div class="col-4"><div class="subtle-label">Purchased</div><strong>{{ eq.purchase_date|date:"M d, Y" }}</strong></div>
+<div class="col-4"><div class="subtle-label">Installed</div><strong>{{ eq.installation_date|date:"M d, Y"|default:"—" }}</strong></div>
+<div class="col-4"><div class="subtle-label">Warranty till</div><strong>{% if eq.warranty_expiry %}{{ eq.warranty_expiry|date:"M d, Y" }}{% if eq.warranty_expiry|date:"U"|floatformat:"0" < today|date:"U"|floatformat:"0" %}&nbsp;<span class="badge-st danger">Expired</span>{% endif %}{% else %}—{% endif %}</strong></div>
+<div class="col-6"><div class="subtle-label">Last maintenance</div><strong>{{ eq.last_service_date|date:"M d, Y"|default:"—" }}</strong></div>
+<div class="col-6"><div class="subtle-label">Next maintenance</div><strong>{% if eq.next_pm_date %}{{ eq.next_pm_date|date:"M d, Y" }}{% else %}—{% endif %}</strong></div>
+{% if eq.notes %}<div class="col-12"><div class="subtle-label">Notes</div><div>{{ eq.notes|linebreaksbr }}</div></div>{% endif %}
+</div>
+<p class="tiny text-3 mt-3 mb-0"><i class="bi bi-qr-code me-1"></i>QR encodes this page URL. Scanning opens it after sign-in (login redirect preserves destination).</p>
+</div></div>
+
+<div class="panel"><div class="panel-head"><h3>Status history</h3></div>
+<div class="panel-body" style="padding-top:.5rem">{% for h in history %}
+<div class="timeline-item"><span class="timeline-ic" style="background:var(--neutral-bg);color:var(--text-2)"><i class="bi bi-arrow-left-right"></i></span>
+<div><div style="font-size:.84rem">{{ h.old_status|status_label|default:"—" }} → <strong>{{ h.new_status|status_label }}</strong>{% if h.reason %} · {{ h.reason }}{% endif %}</div><div class="tiny text-3">{{ h.changed_by|default:"system" }} · {{ h.timestamp|timesince }} ago</div></div></div>
+{% empty %}<div class="empty" style="padding:1.5rem"><div class="empty-ic"><i class="bi bi-clock-history"></i></div><h3 style="font-size:.9rem">No status changes yet</h3><p class="small text-3 mb-0">Edits and archival will be logged here.</p></div>{% endfor %}</div></div>
+</div>
+
+<ul class="nav nav-tabs mt-3" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-sr" type="button">Service requests ({{ service_requests|length }})</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-mr" type="button">Maintenance records ({{ records|length }})</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active panel mt-2" id="t-sr"><div class="panel-body flush">
+{% if service_requests %}<div class="table-wrap"><table class="table"><thead><tr><th>Ticket</th><th>Status</th><th>Priority</th><th>Assignee</th><th>Raised</th></tr></thead>
+<tbody>{% for r in service_requests %}<tr><td><a href="{% url 'request_detail' r.pk %}" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ r.ticket_no }}</a></td><td>{% include "components/badge.html" with status=r.status %}</td><td>{% include "components/badge.html" with status=r.priority %}</td><td class="text-2">{{ r.assigned_to|default:"—" }}</td><td class="text-2">{{ r.requested_at|date:"M d, H:i" }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% include "components/empty.html" with icon="bi-ticket-detailed" title="No service requests" sub="Breakdown tickets for this asset will appear here." %}{% endif %}
+</div></div>
+<div class="tab-pane fade panel mt-2" id="t-mr"><div class="panel-body flush">
+{% if records %}<div class="table-wrap"><table class="table"><thead><tr><th>Completed</th><th>Type</th><th>Technician</th><th>Work done</th><th class="text-end">Cost</th></tr></thead>
+<tbody>{% for m in records %}<tr><td class="text-2">{{ m.completed_at|date:"M d, Y" }}</td><td>{% include "components/badge.html" with status=m.maintenance_type %}</td><td class="text-2">{{ m.technician|default:"—" }}</td><td>{{ m.work_done|truncatewords:14 }}</td><td class="text-end">₹{{ m.cost }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% include "components/empty.html" with icon="bi-tools" title="No maintenance records" sub="Completed work orders will appear here." %}{% endif %}
+</div></div>
+</div>
+{% endblock %}

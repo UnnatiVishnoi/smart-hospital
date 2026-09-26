@@ -1,0 +1,15 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ manual.title }}</h1><div class="subtitle">{{ manual.manufacturer }} {{ manual.model }} · {{ manual.page_count|default:"?" }} pages · {% if manual.is_indexed %}<span class="badge-st success">Indexed</span>{% else %}<span class="badge-st warning">Not indexed</span>{% endif %}</div></div>
+<div class="actions">
+{% if can_manage %}
+<form method="post" action="{% url 'manual_reindex' manual.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-arrow-clockwise me-1"></i>Re-index</button></form>
+<a class="btn btn-outline-danger btn-sm" href="{% url 'manual_delete' manual.pk %}"><i class="bi bi-trash me-1"></i>Delete</a>
+{% endif %}
+</div></div>
+
+<div class="panel"><div class="panel-head"><h3>Sample passages</h3><span class="link text-3 small">{{ manual.chunks.count }} total</span></div>
+<div class="panel-body">{% for c in chunks %}
+<div class="border rounded p-3 mb-3 small" style="background:var(--bg-soft);border-color:var(--border-subtle)"><strong>p. {{ c.page_no|default:"?" }}{% if c.heading %} · {{ c.heading }}{% endif %}</strong><div class="text-2 mt-1">{{ c.content|truncatewords:40 }}</div></div>
+{% empty %}<p class="small text-3 mb-0">No passages — re-index the document.</p>{% endfor %}</div></div>
+{% endblock %}

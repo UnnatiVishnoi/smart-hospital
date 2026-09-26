@@ -1,0 +1,7 @@
+{# Empty / error / skeleton states #}
+<div class="empty">
+  <div class="empty-ic"><i class="bi {{ icon|default:'bi-inbox' }}"></i></div>
+  <h3 style="font-size:.95rem">{{ title|default:"No records found" }}</h3>
+  <p class="small text-3 mb-3">{{ sub|default:"Try adjusting filters or create a new entry." }}</p>
+  {% if cta %}<button class="btn btn-primary btn-sm">{{ cta }}</button>{% endif %}
+</div>

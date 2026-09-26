@@ -1,0 +1,32 @@
+{% extends "layouts/app.html" %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div><h1 class="h3 mb-1">{{ page_title }}</h1><div class="small text-2">{{ printed_at|date:"M d, Y, H:i" }} · by {{ printed_by.get_full_name|default:printed_by.username }}</div></div>
+  <div class="d-flex gap-2"><button class="btn btn-outline-primary btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print</button></div>
+</div>
+
+{% if m and m.overview %}<div class="panel mb-4"><div class="panel-head"><h3>Report period</h3></div>
+<div class="panel-body">
+  <div class="row g-3 small"><div class="col-3"><div class="subtle-label">From</div><strong>{{ m.overview.date_from|date:"M d, Y" }}</strong></div>
+  <div class="col-3"><div class="subtle-label">To</div><strong>{{ m.overview.date_to|date:"M d, Y" }}</strong></div>
+  <div class="col-3"><div class="subtle-label">Equipment</div><strong>{{ m.overview.equipment_total }}</strong></div>
+  <div class="col-3"><div class="subtle-label">Breakdowns</div><strong>{{ m.overview.breakdowns }}</strong></div></div></div></div>
+{% endif %}
+
+<div class="panel mb-4"><div class="panel-head"><h3>Status snapshot</h3></div>
+<div class="panel-body">
+  <div class="table-wrap"><table class="table"><thead><tr><th>Status</th><th class="text-end">Count</th></tr></thead>
+  <tbody>{% for s in m.status if m.status %}<tr><td>{{ s.label }}</td><td class="text-end"><strong>{{ s.n }}</strong></td></tr>{% endfor %}</tbody></table></div>
+</div></div>
+
+<div class="panel"><div class="panel-head"><h3>Maintenance spend summary</h3></div>
+<div class="panel-body">
+  <div class="table-wrap"><table class="table"><thead><tr><th>Equipment</th><th class="text-end">Labour</th><th class="text-end">Parts</th><th class="text-end">Total</th></tr></thead>
+  <tbody>{% for r in m.equipment %}<tr><td>{{ r.asset_tag }} · {{ r.name }}</td><td class="text-end">₹{{ r.labour|floatformat:2 }}</td><td class="text-end">₹{{ r.parts|floatformat:2 }}</td><td class="text-end"><strong>₹{{ r.total|floatformat:2 }}</strong></td></tr>{% endfor %}</tbody></table></div>
+</div></div>
+
+<div class="mt-4 small text-2"><strong>Notes:</strong> {{ insights|join:" · " }}. Downtime sums request durations. PM compliance counts executed schedules ÷ due in range. Spend = job cost + parts cost. Zero records contribute zeros, not estimates.</div>
+{% endblock %}
+{% block extra_css %}
+<style>@media print{body{background:#fff;font-size:12px}.panel{border:1px solid #ddd;box-shadow:none;page-break-inside:avoid}.btn,.page-head,.filterbar,div[class*="action"]{display:none!important}}</style>
+{% endblock %}

@@ -1,0 +1,304 @@
+/* MediServe Design Tokens — premium healthcare SaaS v2 */
+:root{
+  /* Brand */
+  --brand-navy:#0f2040;
+  --brand-navy-2:#16294f;
+  --brand-navy-3:#1c315d;
+  --brand-navy-soft:rgba(15,32,64,.04);
+  --medical-blue:#1e63e9;
+  --medical-blue-dark:#1750bd;
+  --medical-blue-soft:#e8effd;
+  --medical-blue-muted:#c9d9f8;
+  --teal:#0e9f8a;
+  --teal-dark:#088c79;
+  --teal-soft:#e0f4f0;
+  --indigo:#6366f1;
+  --indigo-soft:#eef2ff;
+
+  /* Surfaces */
+  --bg:#f6f8fb;
+  --bg-warm:#f5f6f9;
+  --bg-soft:#eef2f7;
+  --surface:#ffffff;
+  --surface-2:#fbfcfe;
+  --surface-hover:#f8fafd;
+  --surface-elevated:#ffffff;
+  --border:#e3e9f2;
+  --border-strong:#cfd8e6;
+  --border-subtle:#edf1f7;
+
+  /* Text */
+  --text:#0f1f3c;
+  --text-2:#46576f;
+  --text-3:#66748e;
+  --text-inverse:#ffffff;
+  --text-disabled:#a0aebf;
+
+  /* Status */
+  --success:#12805c;
+  --success-soft:#d1fae5;
+  --success-bg:#e2f4ec;
+  --warning:#9a5b00;
+  --warning-soft:#fef3cd;
+  --warning-bg:#fdf0d8;
+  --danger:#c0362c;
+  --danger-soft:#fee2e2;
+  --danger-bg:#fbe7e4;
+  --info:#1a6fd4;
+  --info-soft:#dbeafe;
+  --info-bg:#e6f0fd;
+  --neutral:#5b6b85;
+  --neutral-bg:#edf1f7;
+
+  /* Type */
+  --font-sans:"Inter","Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs-10:0.625rem; --fs-11:0.6875rem; --fs-12:0.75rem; --fs-13:0.8125rem;
+  --fs-14:0.875rem; --fs-15:0.9375rem; --fs-16:1rem; --fs-17:1.0625rem;
+  --fs-20:1.25rem; --fs-24:1.5rem; --fs-28:1.75rem; --fs-32:2rem;
+  --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+  --lh-tight:1.25; --lh-normal:1.5; --lh-relaxed:1.625;
+
+  /* Spacing */
+  --sp-1:0.25rem; --sp-2:0.5rem; --sp-3:0.75rem; --sp-4:1rem;
+  --sp-5:1.25rem; --sp-6:1.5rem; --sp-8:2rem; --sp-10:2.5rem;
+  --sp-12:3rem; --sp-16:4rem; --sp-20:5rem;
+
+  /* Radius */
+  --r-4:4px; --r-6:6px; --r-8:8px; --r-10:10px; --r-12:12px;
+  --r-14:14px; --r-16:16px; --r-20:20px; --r-pill:999px;
+
+  /* Shadows */
+  --shadow-xs:0 1px 2px rgba(15,32,64,.04);
+  --shadow-sm:0 1px 3px rgba(15,32,64,.06),0 1px 2px rgba(15,32,64,.04);
+  --shadow-md:0 4px 12px rgba(15,32,64,.07),0 1px 3px rgba(15,32,64,.05);
+  --shadow-lg:0 12px 32px rgba(15,32,64,.1),0 2px 8px rgba(15,32,64,.06);
+  --shadow-xl:0 20px 48px rgba(15,32,64,.14),0 4px 12px rgba(15,32,64,.08);
+  --shadow-brand:0 8px 24px rgba(30,99,233,.18);
+
+  /* Layout */
+  --sidebar-w:264px;
+  --sidebar-collapsed:76px;
+  --topbar-h:64px;
+  --content-max:1320px;
+  --touch-min:40px;
+
+  /* Transitions */
+  --t-fast:150ms cubic-bezier(.4,0,.2,1);
+  --t-base:200ms cubic-bezier(.4,0,.2,1);
+  --t-slow:300ms cubic-bezier(.4,0,.2,1);
+  --t-slower:400ms cubic-bezier(.4,0,.2,1);
+
+  /* Animation easing */
+  --ease-out-back:cubic-bezier(.34,1.56,.64,1);
+  --ease-spring:cubic-bezier(.5,.02,.25,1);
+  --ease-bounce:cubic-bezier(.34,1.3,.64,1);
+
+  /* Z-index scale */
+  --z-base:0; --z-raised:1; --z-dropdown:100;
+  --z-sticky:1030; --z-sidebar:1040; --z-scrim:1035;
+  --z-modal:1060; --z-toast:1080; --z-max:9999;
+}
+
+/* ---- Reset & Base ---- */
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  font-size:var(--fs-14);
+  line-height:var(--lh-normal);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% -5%, rgba(30,99,233,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 105%, rgba(14,159,138,.03) 0%, transparent 60%),
+    var(--bg);
+}
+h1,h2,h3,h4,h5,h6{color:var(--text);line-height:var(--lh-tight);letter-spacing:-.015em;margin:0;font-weight:var(--fw-semibold)}
+h1{font-size:var(--fs-24);font-weight:var(--fw-bold)}
+h2{font-size:var(--fs-20);font-weight:var(--fw-semibold)}
+h3{font-size:var(--fs-16);font-weight:var(--fw-semibold)}
+h4{font-size:var(--fs-15);font-weight:var(--fw-semibold)}
+h5{font-size:var(--fs-14);font-weight:var(--fw-semibold)}
+p{margin:0}
+a{color:var(--medical-blue);text-decoration:none;transition:color var(--t-fast)}
+a:hover{color:var(--medical-blue-dark);text-decoration:none}
+ul,ol{padding-left:1.25rem;margin:0}
+li{margin-bottom:.15rem}
+hr{border:0;border-top:1px solid var(--border-subtle);margin:var(--sp-4) 0}
+
+/* ---- Utility classes ---- */
+.text-2{color:var(--text-2)} .text-3{color:var(--text-3)}
+.text-inv{color:var(--text-inverse)}
+.small{font-size:var(--fs-12)} .tiny{font-size:var(--fs-11)}
+.fw-medium{font-weight:var(--fw-medium)} .fw-semibold{font-weight:var(--fw-semibold)} .fw-bold{font-weight:var(--fw-bold)}
+.lh-tight{line-height:var(--lh-tight)}
+.mt-auto{margin-top:auto} .mb-0{margin-bottom:0}
+.wrap-anywhere{overflow-wrap:anywhere}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- Typography hierarchy ---- */
+.display-title{font-size:var(--fs-28);font-weight:var(--fw-bold);letter-spacing:-.025em;line-height:1.15}
+.section-label{font-size:var(--fs-11);font-weight:var(--fw-semibold);text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:var(--sp-2)}
+.subtle-label{font-size:var(--fs-13);font-weight:var(--fw-medium);color:var(--text-2);letter-spacing:-.005em}
+
+/* ---- Focus ---- */
+:focus-visible{outline:2px solid var(--medical-blue);outline-offset:2px;border-radius:var(--r-4)}
+::selection{background:var(--medical-blue-soft);color:var(--text)}
+
+/* ---- Keyboard skip link ---- */
+.skip-link{
+  position:absolute;left:.75rem;top:-4rem;z-index:var(--z-max);
+  background:var(--brand-navy);color:#fff;padding:.55rem .95rem;
+  border-radius:var(--r-8);font-size:var(--fs-13);font-weight:var(--fw-semibold);
+  transition:top var(--t-fast),box-shadow var(--t-fast);
+}
+.skip-link:focus{top:.75rem;color:#fff;text-decoration:none;box-shadow:var(--shadow-lg)}
+
+/* ---- Buttons ---- */
+.btn{
+  font-family:var(--font-sans);font-weight:var(--fw-medium);font-size:var(--fs-14);
+  border-radius:var(--r-8);transition:all var(--t-fast);min-height:var(--touch-min);
+  display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+  cursor:pointer;border:1px solid transparent;white-space:nowrap;
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:"";position:absolute;inset:0;background:currentColor;opacity:0;
+  transition:opacity var(--t-fast);
+}
+.btn:active::after{opacity:.08}
+.btn-sm{font-size:var(--fs-13);min-height:32px;padding:.35rem .75rem;border-radius:var(--r-6)}
+.btn-lg{font-size:var(--fs-15);min-height:48px;padding:.65rem 1.5rem;border-radius:var(--r-10)}
+.btn-primary{background:var(--medical-blue);border-color:var(--medical-blue);color:#fff}
+.btn-primary:hover,.btn-primary:focus{background:var(--medical-blue-dark);border-color:var(--medical-blue-dark);color:#fff;transform:translateY(-1px);box-shadow:var(--shadow-brand)}
+.btn-primary:active{transform:translateY(0)}
+.btn-outline-primary{color:var(--medical-blue);border-color:var(--border-strong);background:var(--surface)}
+.btn-outline-primary:hover,.btn-outline-primary:focus{background:var(--medical-blue-soft);border-color:var(--medical-blue);color:var(--medical-blue-dark);transform:translateY(-1px)}
+.btn-outline-primary:active{transform:translateY(0)}
+.btn-success{background:#12805c;border-color:#12805c;color:#fff}
+.btn-success:hover{background:#0e6b4c;border-color:#0e6b4c;color:#fff;transform:translateY(-1px)}
+.btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn-danger:hover{background:#a82e24;border-color:#a82e24;color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-2)}
+.btn-ghost:hover{background:var(--bg-soft);color:var(--text)}
+.btn:disabled,.btn.disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+.btn .bi{vertical-align:-.12em;flex-shrink:0}
+.btn-group{display:inline-flex;gap:var(--sp-2)}
+.btn + .btn{margin-left:var(--sp-2)}
+[class*="btn-outline"] + [class*="btn-outline"]{margin-left:var(--sp-2)}
+
+/* ---- Form controls ---- */
+.form-control,.form-select{
+  font-family:var(--font-sans);font-size:var(--fs-14);
+  border-radius:var(--r-8);border-color:var(--border-strong);
+  color:var(--text);background:var(--surface);transition:all var(--t-fast);
+  min-height:var(--touch-min);box-shadow:var(--shadow-xs);
+}
+.form-control:hover,.form-select:hover{border-color:var(--text-3)}
+.form-control:focus,.form-select:focus{
+  border-color:var(--medical-blue);box-shadow:0 0 0 3px var(--medical-blue-soft),var(--shadow-xs);
+  outline:none;
+}
+.form-control::placeholder{color:var(--text-disabled)}
+.form-control:disabled,.form-select:disabled{background:var(--bg-soft);color:var(--text-disabled);cursor:not-allowed}
+textarea.form-control{min-height:88px;line-height:var(--lh-normal);resize:vertical}
+select.form-select{appearance:auto;background-image:none}
+.form-label{font-size:var(--fs-13);font-weight:var(--fw-medium);color:var(--text-2);margin-bottom:.35rem;display:block}
+.form-text{font-size:var(--fs-12);color:var(--text-3);margin-top:.25rem}
+.form-check-input{accent-color:var(--medical-blue);width:1rem;height:1rem}
+.invalid-feedback{font-size:var(--fs-12);color:var(--danger);margin-top:.25rem}
+.input-group{display:flex;gap:0}
+.input-group .form-control{border-radius:var(--r-8) 0 0 var(--r-8)}
+.input-group .btn{border-radius:0 var(--r-8) var(--r-8) 0}
+.form-floating{position:relative}
+
+/* ---- Tables ---- */
+.table{font-size:var(--fs-14);margin:0;width:100%}
+.table thead th{
+  font-size:var(--fs-11);text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-2);font-weight:var(--fw-semibold);border-bottom:1px solid var(--border);
+  background:var(--surface-2);white-space:nowrap;padding:.6rem .9rem;
+}
+.table tbody td{vertical-align:middle;border-bottom:1px solid var(--border-subtle);padding:.65rem .9rem;overflow-wrap:anywhere}
+.table tbody tr{transition:background var(--t-fast)}
+.table tbody tr:hover{background:var(--surface-hover)}
+.table tbody tr:last-child td{border-bottom:0}
+.table tbody tr{animation:rowFadeIn .3s ease both}
+@keyframes rowFadeIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media(max-width:576px){
+  .table{font-size:var(--fs-13)}
+  .table tbody td,.table thead th{padding:.5rem .65rem}
+  .table thead th{white-space:normal}
+}
+
+/* ---- Pagination ---- */
+.pagination{display:flex;gap:2px;list-style:none;padding:0;margin:0;flex-wrap:wrap;row-gap:.35rem}
+.page-item .page-link{
+  min-width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r-8);border:1px solid var(--border);background:var(--surface);
+  color:var(--text-2);font-size:var(--fs-13);font-weight:var(--fw-medium);
+  transition:all var(--t-fast);text-decoration:none;padding:0 .65rem;
+}
+.page-item .page-link:hover{background:var(--bg-soft);color:var(--text);border-color:var(--border-strong);transform:translateY(-1px)}
+.page-item.active .page-link{background:var(--brand-navy);border-color:var(--brand-navy);color:#fff}
+.page-item.disabled .page-link{opacity:.4;pointer-events:none}
+.page-item:first-child .page-link{border-radius:var(--r-8)}
+.page-item:last-child .page-link{border-radius:var(--r-8)}
+
+/* ---- Scrollbars ---- */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:var(--r-pill);border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--text-3);border:2px solid transparent;background-clip:content-box}
+
+/* ---- Selection ---- */
+::selection{background:var(--medical-blue-soft);color:var(--text)}
+
+/* ---- Accessibility ---- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes fadeInLeft{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:none}}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.3)}50%{transform:scale(1.05)}70%{transform:scale(.97)}100%{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+@keyframes countUp{from{opacity:.3}to{opacity:1}}
+@keyframes borderGlow{0%,100%{box-shadow:0 0 0 0 rgba(30,99,233,.2)}50%{box-shadow:0 0 0 3px rgba(30,99,233,0)}}
+
+.anim-fade-in{animation:fadeIn var(--t-slower) ease both}
+.anim-fade-up{animation:fadeInUp var(--t-slower) var(--ease-spring) both}
+.anim-scale-in{animation:scaleIn var(--t-slow) var(--ease-spring) both}
+
+/* Stagger children */
+.stagger-children>*{opacity:0;animation:fadeInUp var(--t-slow) var(--ease-spring) both}
+.stagger-children>*:nth-child(1){animation-delay:0ms}
+.stagger-children>*:nth-child(2){animation-delay:40ms}
+.stagger-children>*:nth-child(3){animation-delay:80ms}
+.stagger-children>*:nth-child(4){animation-delay:120ms}
+.stagger-children>*:nth-child(5){animation-delay:160ms}
+.stagger-children>*:nth-child(6){animation-delay:200ms}
+.stagger-children>*:nth-child(7){animation-delay:240ms}
+.stagger-children>*:nth-child(8){animation-delay:280ms}
+.stagger-children>*:nth-child(9){animation-delay:320ms}
+.stagger-children>*:nth-child(10){animation-delay:360ms}
+.stagger-children>*:nth-child(n+11){animation-delay:400ms}
+
+img{max-width:100%;height:auto}

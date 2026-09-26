@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'password_change' %}"><i class="bi bi-key me-1"></i>Change password</a></div></div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-head"><h3>Account</h3><span class="badge-st primary ms-auto">{{ request.user.get_role_display }}</span></div>
+    <div class="panel-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <span class="avatar" style="width:56px;height:56px;font-size:1.15rem">{{ request.user.first_name|slice:":1"|default:request.user.username|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+        <div>
+          <strong style="font-size:var(--fs-17)">{{ request.user.get_full_name|default:request.user.username }}</strong>
+          <div class="small text-3">@{{ request.user.username }} · {{ request.user.email|default:"no email" }}</div>
+          <div class="small text-3">Department: {{ request.user.department|default:"—" }} · {% if request.user.is_active %}<span class="badge-st success">Active</span>{% else %}<span class="badge-st danger">Inactive</span>{% endif %}</div>
+        </div>
+      </div>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">First name</label>{{ form.first_name }}{% for e in form.first_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+          <div class="col-md-6"><label class="form-label">Last name</label>{{ form.last_name }}{% for e in form.last_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+          <div class="col-md-6"><label class="form-label">Email <span class="text-danger">*</span></label>{{ form.email }}{% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+          <div class="col-md-6"><label class="form-label">Phone</label>{{ form.phone }}{% for e in form.phone.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+          <div class="col-12"><label class="form-label">Profile image</label>{{ form.profile_image }}{% for e in form.profile_image.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+        </div>
+        <button class="btn btn-primary mt-4" type="submit"><i class="bi bi-check-lg me-1"></i>Save changes</button>
+      </form>
+    </div></div>
+  <div class="panel"><div class="panel-head"><h3>What you can do</h3></div>
+    <div class="panel-body">
+      {% if request.user.role == 'admin' %}
+        <p class="text-2">Full system access: manage users, departments, equipment and settings. <a href="{% url 'user_list' %}">Open user management →</a></p>
+      {% elif request.user.role == 'manager' %}
+        <p class="text-2">Manage equipment and schedules, view all requests, assign technicians and review reports.</p>
+      {% elif request.user.role == 'technician' %}
+        <p class="text-2">Work your assigned queue: update progress and completion details.</p>
+      {% else %}
+        <p class="text-2">View your department's equipment, submit and track your requests, and use the AI assistant.</p>
+      {% endif %}
+      <hr>
+      <div class="small text-3">Role changes and activation are administrator-only and logged to the audit trail.</div>
+    </div></div>
+</div>
+{% endblock %}

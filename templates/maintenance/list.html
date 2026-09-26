@@ -1,0 +1,54 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} · <span class="badge-st neutral">{{ open_n }} open</span> {% if overdue_n %}<span class="badge-st danger">{{ overdue_n }} overdue</span>{% endif %}</div></div>
+<div class="actions"><a class="btn btn-primary" href="{% url 'request_create' %}"><i class="bi bi-plus-lg me-1"></i>Report fault</a></div></div>
+
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" name="q" value="{{ f.q }}" placeholder="Search ticket, asset, description…" style="flex:2;min-width:200px">
+  <select class="form-select" name="status"><option value="">Status</option>
+    <option value="open" {% if f.status == 'open' %}selected{% endif %}>Open</option>
+    <option value="acknowledged" {% if f.status == 'acknowledged' %}selected{% endif %}>Assigned</option>
+    <option value="in_progress" {% if f.status == 'in_progress' %}selected{% endif %}>In progress</option>
+    <option value="on_hold" {% if f.status == 'on_hold' %}selected{% endif %}>On hold</option>
+    <option value="resolved" {% if f.status == 'resolved' %}selected{% endif %}>Resolved</option>
+    <option value="closed" {% if f.status == 'closed' %}selected{% endif %}>Closed</option>
+    <option value="reopened" {% if f.status == 'reopened' %}selected{% endif %}>Reopened</option></select>
+  <select class="form-select" name="priority"><option value="">Priority</option>
+    <option value="low" {% if f.priority == 'low' %}selected{% endif %}>Low</option>
+    <option value="medium" {% if f.priority == 'medium' %}selected{% endif %}>Medium</option>
+    <option value="high" {% if f.priority == 'high' %}selected{% endif %}>High</option>
+    <option value="emergency" {% if f.priority == 'emergency' %}selected{% endif %}>Emergency</option>
+    <option value="critical" {% if f.priority == 'critical' %}selected{% endif %}>Critical</option></select>
+  <select class="form-select" name="department"><option value="">Dept</option>{% for d in departments %}<option value="{{ d.pk }}" {% if f.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }}</option>{% endfor %}</select>
+  <input class="form-control" type="date" name="date" value="{{ f.date }}" style="max-width:170px">
+  <label class="small text-2 d-flex align-items-center gap-1"><input type="checkbox" name="overdue" value="1" {% if f.overdue %}checked{% endif %} class="form-check-input"> Overdue</label>
+  <label class="small text-2 d-flex align-items-center gap-1"><input type="checkbox" name="mine" value="1" {% if f.mine %}checked{% endif %} class="form-check-input"> Mine</label>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Apply</button>
+  <a class="btn btn-ghost" href="{% url 'request_list' %}">Clear</a>
+</form>
+
+<div class="panel"><div class="panel-body flush">
+{% if page.object_list %}
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Ticket</th><th>Equipment</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Deadline</th><th class="text-end">Actions</th></tr></thead>
+<tbody>{% for r in page.object_list %}
+<tr><td><a href="{% url 'request_detail' r.pk %}" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ r.ticket_no }}</a><div class="tiny text-3">{{ r.requested_at|date:"M d, H:i" }}</div></td>
+<td>{{ r.equipment.asset_tag }}<div class="tiny text-3">{{ r.equipment.department.code }}</div></td>
+<td>{% include "components/badge.html" with status=r.priority %}</td>
+<td>{% include "components/badge.html" with status=r.status %}</td>
+<td class="text-2">{{ r.assigned_to|default:"—" }}</td>
+<td class="text-2" style="white-space:nowrap">{% if r.deadline %}{{ r.deadline|date:"M d, H:i" }}{% if r.is_overdue %} <span class="badge-st danger">Overdue</span>{% endif %}{% else %}—{% endif %}</td>
+<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'request_detail' r.pk %}">Open</a></td></tr>
+{% endfor %}</tbody></table></div>
+<div class="d-flex justify-content-between align-items-center p-3 border-top flex-wrap gap-2">
+<span class="small text-3">Page {{ page.number }} of {{ page.paginator.num_pages }} · {{ page.paginator.count }} requests</span>
+<nav><ul class="pagination pagination-sm mb-0">
+{% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.previous_page_number }}">‹</a></li>{% endif %}
+<li class="page-item active"><span class="page-link">{{ page.number }}</span></li>
+{% if page.has_next %}<li class="page-item"><a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page.next_page_number }}">›</a></li>{% endif %}
+</ul></nav></div>
+{% else %}
+{% include "components/empty.html" with icon="bi-ticket-detailed" title="No service requests" sub="Report the first fault to start the queue." %}
+{% endif %}
+</div></div>
+{% endblock %}

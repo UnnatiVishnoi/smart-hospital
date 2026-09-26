@@ -1,0 +1,8 @@
+{# Page header: expects title, sub, actions html via block #}
+<div class="page-head">
+  <div>
+    <h1 style="font-size:var(--fs-24);font-weight:var(--fw-bold)">{{ title }}</h1>
+    {% if sub %}<div class="subtitle" style="font-size:var(--fs-14);color:var(--text-2);margin-top:.2rem">{{ sub }}</div>{% endif %}
+  </div>
+  <div class="actions">{% block actions %}{{ actions|safe }}{% endblock %}</div>
+</div>

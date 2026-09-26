@@ -1,0 +1,12 @@
+<form class="filterbar mb-4" method="get">
+  <input class="form-control" type="date" name="from" value="{{ f.date_from|date:'Y-m-d' }}" style="max-width:170px" aria-label="From">
+  <input class="form-control" type="date" name="to" value="{{ f.date_to|date:'Y-m-d' }}" style="max-width:170px" aria-label="To">
+  <select class="form-select" name="department"><option value="">Dept</option>{% for d in departments %}<option value="{{ d.pk }}" {% if f.department == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }}</option>{% endfor %}</select>
+  <select class="form-select" name="category"><option value="">Category</option>{% for c in categories %}<option value="{{ c.pk }}" {% if f.category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+  <select class="form-select" name="status"><option value="">Equipment status</option>
+    <option value="operational" {% if f.status == 'operational' %}selected{% endif %}>Operational</option>
+    <option value="breakdown" {% if f.status == 'breakdown' %}selected{% endif %}>Breakdown</option>
+    <option value="under_maintenance" {% if f.status == 'under_maintenance' %}selected{% endif %}>Under maintenance</option>
+    <option value="standby" {% if f.status == 'standby' %}selected{% endif %}>Standby</option></select>
+  <button class="btn btn-primary" type="submit">Apply</button>
+</form>

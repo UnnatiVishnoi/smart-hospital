@@ -1,0 +1,16 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }} · Total ₹{{ total|floatformat:2 }}</div></div>
+<div class="actions"><a class="btn btn-outline-primary" href="{% url 'reports_costs_csv' %}?{{ request.GET.urlencode }}"><i class="bi bi-download me-1"></i>CSV</a><a class="btn btn-outline-primary" href="{% url 'reports' %}?{{ request.GET.urlencode }}"><i class="bi bi-bar-chart me-1"></i>Analytics</a></div></div>
+{% include "reports/_filters.html" %}
+<div class="panel"><div class="panel-head"><h3>Cost by equipment</h3></div><div class="panel-body flush">
+{% if rows %}<div class="table-wrap"><table class="table"><thead><tr><th>Asset</th><th>Dept</th><th class="text-end">Jobs</th><th class="text-end">Labour</th><th class="text-end">Parts</th><th class="text-end">Total</th></tr></thead>
+<tbody>{% for r in rows %}<tr><td><a href="{% url 'equipment_detail' r.pk %}" style="font-weight:var(--fw-semibold);text-decoration:none;color:var(--text)">{{ r.asset_tag }}</a><div class="tiny text-3">{{ r.name }}</div></td><td class="text-2">{{ r.dept }}</td><td class="text-end">{{ r.jobs }}</td><td class="text-end">₹{{ r.labour|floatformat:2 }}</td><td class="text-end">₹{{ r.parts|floatformat:2 }}</td><td class="text-end"><strong>₹{{ r.total|floatformat:2 }}</strong></td></tr>{% endfor %}</tbody></table></div>
+{% else %}{% include "components/empty.html" with title="No spend in range" sub="Completed jobs with costs will appear here." %}{% endif %}
+</div></div>
+<div class="panel mt-4"><div class="panel-head"><h3>Labour by category</h3></div><div class="panel-body flush">
+{% if cat_rows %}<div class="table-wrap"><table class="table"><thead><tr><th>Category</th><th class="text-end">Jobs</th><th class="text-end">Labour</th></tr></thead>
+<tbody>{% for c in cat_rows %}<tr><td>{{ c.label }}</td><td class="text-end">{{ c.n }}</td><td class="text-end">₹{{ c.total|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="small text-3 px-3 py-2">No category spend yet.</p>{% endif %}
+</div></div>
+{% endblock %}

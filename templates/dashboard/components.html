@@ -1,0 +1,37 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="text-2">{{ page_sub }}</div></div>
+<div class="actions"><button class="btn btn-outline-primary" onclick="toast('Link copied (demo)')"><i class="bi bi-share me-1"></i>Share</button><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#demoModal"><i class="bi bi-plus-lg me-1"></i>Open dialog</button></div></div>
+
+<div class="demo-banner"><i class="bi bi-palette2"></i><span>All states below are interactive previews — hover, focus, active, disabled and loading are styled in <code>components.css</code>.</span></div>
+
+<div class="panel mb-3"><div class="panel-head"><h3>Badges &amp; buttons</h3></div><div class="panel-body d-flex gap-2 flex-wrap align-items-center">
+  {% include "components/badge.html" with status="operational" %}{% include "components/badge.html" with status="under_maintenance" %}{% include "components/badge.html" with status="breakdown" %}{% include "components/badge.html" with status="in_progress" %}{% include "components/badge.html" with status="emergency" %}{% include "components/badge.html" with status="standby" %}
+  <span class="vr"></span>
+  <button class="btn btn-primary btn-sm">Primary</button><button class="btn btn-outline-primary btn-sm">Secondary</button><button class="btn btn-outline-primary btn-sm" disabled>Disabled</button><button class="btn btn-primary btn-sm" disabled><span class="spinner-border spinner-border-sm me-1"></span>Loading</button>
+</div></div>
+
+<div class="grid-2">
+  <div class="panel"><div class="panel-head"><h3>Form fields</h3></div><div class="panel-body">
+    {% include "components/form_field.html" with label="Equipment name" fid="d1" placeholder="e.g. Ventilator VEN-ICU-004" required=True %}
+    {% include "components/form_field.html" with label="With hint" fid="d2" hint="Asset tags follow PREFIX-DEPT-NNN." value="VEN-ICU-004" %}
+    {% include "components/form_field.html" with label="With error" fid="d3" error="Serial number already exists." value="SN-88213" %}
+    <ul class="nav nav-tabs mt-2"><li class="nav-item"><a class="nav-link active" href="#">Details</a></li><li class="nav-item"><a class="nav-link" href="#">History</a></li><li class="nav-item"><a class="nav-link" href="#">Manuals</a></li></ul>
+  </div></div>
+  <div>
+    <div class="panel mb-3"><div class="panel-head"><h3>Filter bar + table</h3></div><div class="panel-body">
+      {% include "components/filterbar.html" with placeholder="Search ventilators, tickets…" %}
+      <div class="table-wrap mt-3 border rounded"><table class="table"><thead><tr><th>Asset</th><th>Status</th><th>Next PM</th></tr></thead>
+      <tbody><tr><td><strong>VEN-ICU-004</strong></td><td>{% include "components/badge.html" with status="operational" %}</td><td class="text-2">Oct 03</td></tr>
+      <tr><td><strong>XR-RAD-002</strong></td><td>{% include "components/badge.html" with status="breakdown" %}</td><td class="text-2">—</td></tr></tbody></table></div>
+      <div class="d-flex justify-content-end mt-2">{% include "components/pagination.html" %}</div>
+    </div></div>
+    <div class="panel"><div class="panel-head"><h3>Empty · loading · error</h3></div><div class="panel-body">
+      <div class="row g-3"><div class="col-md-4 border rounded p-2">{% include "components/empty.html" with title="No spares found" sub="No parts match these filters." cta="Add part" %}</div>
+      <div class="col-md-4 border rounded p-3">{% include "components/skeleton.html" %}<div class="mt-2 small text-3">Loading…</div></div>
+      <div class="col-md-4">{% include "components/error_state.html" %}</div></div>
+    </div></div>
+  </div>
+</div>
+{% include "components/modal.html" %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{# Search + filter bar (visual) #}
+<form class="filterbar" onsubmit="return false" aria-label="Search and filter">
+  <div class="position-relative" style="flex:1;min-width:200px">
+    <i class="bi bi-search position-absolute" style="left:.7rem;top:50%;transform:translateY(-50%);color:var(--text-3)"></i>
+    <input class="form-control ps-4" placeholder="{{ placeholder|default:'Search…' }}" style="padding-left:2.2rem">
+  </div>
+  <select class="form-select" aria-label="Status"><option>Status: all</option><option>Open</option><option>In progress</option><option>Resolved</option></select>
+  <select class="form-select" aria-label="Department"><option>Department: all</option><option>ICU</option><option>Radiology</option><option>Emergency</option></select>
+  <button class="btn btn-outline-primary" type="button"><i class="bi bi-funnel me-1"></i>Filters</button>
+  <button class="btn btn-primary" type="button"><i class="bi bi-search me-1"></i>Search</button>
+</form>

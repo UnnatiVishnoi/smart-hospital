@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong · MediServe{% endblock %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh;background:var(--bg);padding:1.5rem">
+  <div class="panel text-center" style="max-width:480px;width:100%;padding:3rem 2.5rem">
+    <div class="empty-ic mx-auto" style="width:56px;height:56px"><i class="bi bi-cloud-slash"></i></div>
+    <span class="badge-st danger mb-3">Error 500</span>
+    <h1 style="font-size:var(--fs-24);font-weight:var(--fw-bold);margin-top:.5rem">A server hiccup interrupted care</h1>
+    <p class="text-2 mt-2">Our team has logged the issue. Please retry — your maintenance data is safe.</p>
+    <div class="d-flex gap-2 justify-content-center mt-4"><button class="btn btn-primary" onclick="location.reload()"><i class="bi bi-arrow-clockwise me-1"></i>Retry</button><a class="btn btn-outline-primary" href="/">Dashboard</a></div>
+  </div>
+</div>
+{% endblock %}

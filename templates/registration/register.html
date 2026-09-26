@@ -1,0 +1,172 @@
+{% extends "layouts/auth.html" %}
+{% load static %}
+{% block auth_content %}
+<div class="auth-wrap">
+  <!-- Decorative grid + glow -->
+  <div class="auth-brand-grid" aria-hidden="true"></div>
+  <div class="auth-brand-glow glow-1" aria-hidden="true"></div>
+  <div class="auth-brand-glow glow-2" aria-hidden="true"></div>
+
+  <!-- Brand side : role panel -->
+  <div class="auth-brand">
+    <div class="brand-area">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+          <rect x="2" y="2" width="20" height="20" rx="6" fill="#fff"/>
+          <path d="M7 12h3l1.5-3 2 6L15 12h2" stroke="#1e63e9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">{{ PRODUCT_NAME|default:"MediServe" }}</div>
+        <div class="brand-sub">{{ PRODUCT_SUB|default:"Smart Hospital Servicing" }}</div>
+      </div>
+    </div>
+
+    <div class="auth-brand-content">
+      <div class="eyebrow"><span class="pulse"></span> Join with the right role</div>
+      <h1>
+        Create your account,<br>
+        <span class="highlight">get role-based access</span><br>
+        instantly.
+      </h1>
+      <p>Pick the role that matches your work. Permissions are enforced on the server — you only see what your role allows.</p>
+
+      <div class="auth-feature-grid">
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-people"></i></div>
+          <div class="feature-text"><div class="feature-title">Hospital Staff</div><div class="feature-desc">Own department · report faults</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-tools"></i></div>
+          <div class="feature-text"><div class="feature-title">Technician</div><div class="feature-desc">Assigned tickets · PM tasks</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-clipboard-data"></i></div>
+          <div class="feature-text"><div class="feature-title">Manager</div><div class="feature-desc">All assets · schedules · reports</div></div>
+        </div>
+        <div class="auth-feature">
+          <div class="feature-ic"><i class="bi bi-shield-lock"></i></div>
+          <div class="feature-text"><div class="feature-title">Admin</div><div class="feature-desc">Granted by existing admin only</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-brand-foot">Secure role-based access &middot; {{ PRODUCT_NAME|default:"MediServe" }}</div>
+  </div>
+
+  <!-- Card side -->
+  <div class="auth-card-wrap">
+    <div class="auth-card" style="max-width:480px">
+      <div class="lock-mark"><i class="bi bi-person-plus-fill"></i></div>
+      <h2>Create account</h2>
+      <p class="auth-sub">Register with your work details and role.</p>
+
+      {% if messages %}{% for m in messages %}
+        <div class="alert {% if m.tags == 'error' %}alert-danger{% else %}alert-{{ m.tags|default:'info' }}{% endif %} py-2 small">{{ m }}</div>
+      {% endfor %}{% endif %}
+
+      <form method="post" novalidate id="registerForm" class="auth-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.first_name.id_for_label }}">First name</label>
+              <div class="field-wrap"><i class="bi bi-person input-ic"></i>{{ form.first_name }}</div>
+              {% for e in form.first_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+              <div class="field-wrap"><i class="bi bi-person input-ic"></i>{{ form.last_name }}</div>
+              {% for e in form.last_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+          <div class="field-wrap"><i class="bi bi-at input-ic"></i>{{ form.username }}</div>
+          {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="{{ form.email.id_for_label }}">Work email</label>
+          <div class="field-wrap"><i class="bi bi-envelope input-ic"></i>{{ form.email }}</div>
+          {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
+              {{ form.role }}
+              {% for e in form.role.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.department.id_for_label }}">Department</label>
+              {{ form.department }}
+              {% for e in form.department.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="{{ form.phone.id_for_label }}">Phone (optional)</label>
+          <div class="field-wrap"><i class="bi bi-telephone input-ic"></i>{{ form.phone }}</div>
+          {% for e in form.phone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+              <div class="field-wrap"><i class="bi bi-key input-ic"></i>{{ form.password1 }}</div>
+              {% for e in form.password1.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-row">
+              <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm</label>
+              <div class="field-wrap"><i class="bi bi-key-fill input-ic"></i>{{ form.password2 }}</div>
+              {% for e in form.password2.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit" id="registerBtn"><i class="bi bi-person-plus me-1"></i>Create account</button>
+      </form>
+
+      <div class="info-pill"><i class="bi bi-info-circle"></i><span>Admin role cannot self-register. Ask an existing administrator to create it via Users panel.</span></div>
+
+      <div class="auth-foot">
+        <div class="mb-2">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+        <div class="role-pills">
+          <span class="role-pill">Staff</span>
+          <span class="role-pill">Technician</span>
+          <span class="role-pill">Manager</span>
+        </div>
+        {{ PRODUCT_NAME|default:"MediServe" }} &middot; Smart Hospital Servicing
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(){
+  var b = document.getElementById('registerBtn');
+  b.disabled = true;
+  b.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creating…';
+});
+</script>
+<style>
+/* register page: selects + role panel need full-width controls (login CSS pads text inputs for icons) */
+#registerForm select.form-select{min-height:46px;border-radius:10px;font-size:.9rem}
+#registerForm .field-wrap .form-control{width:100%}
+</style>
+{% endblock %}

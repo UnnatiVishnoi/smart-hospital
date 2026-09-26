@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="page-head"><div><h1>{{ page_title }}</h1><div class="subtitle">{{ page_sub }}</div></div></div>
+<div class="panel" style="max-width:880px"><div class="panel-body">
+<form method="post" enctype="multipart/form-data" novalidate id="eqForm">{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label">Asset ID <span class="text-danger">*</span></label><div class="input-group">{{ form.asset_tag }}<button class="btn btn-outline-primary" type="button" id="suggestBtn">Suggest</button></div>{% for e in form.asset_tag.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Equipment name <span class="text-danger">*</span></label>{{ form.name }}{% for e in form.name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Category <span class="text-danger">*</span></label>{{ form.category }}{% for e in form.category.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Department <span class="text-danger">*</span></label>{{ form.department }}{% for e in form.department.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Manufacturer <span class="text-danger">*</span></label>{{ form.manufacturer }}{% for e in form.manufacturer.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Vendor</label>{{ form.vendor }}{% for e in form.vendor.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Model number</label>{{ form.model_no }}{% for e in form.model_no.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Serial number <span class="text-danger">*</span></label>{{ form.serial_no }}{% for e in form.serial_no.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-4"><label class="form-label">Purchase date <span class="text-danger">*</span></label>{{ form.purchase_date }}{% for e in form.purchase_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-4"><label class="form-label">Installation date</label>{{ form.installation_date }}{% for e in form.installation_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-4"><label class="form-label">Warranty expiry</label>{{ form.warranty_expiry }}{% for e in form.warranty_expiry.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Location</label>{{ form.location_detail }}{% for e in form.location_detail.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-3"><label class="form-label">Criticality</label>{{ form.criticality }}</div>
+<div class="col-md-3"><label class="form-label">Status</label>{{ form.status }}</div>
+<div class="col-md-6"><label class="form-label">Last maintenance</label>{{ form.last_service_date }}{% for e in form.last_service_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Next maintenance</label>{{ form.next_pm_date }}{% for e in form.next_pm_date.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Image (JPG/PNG/WEBP ≤ 5 MB)</label>{{ form.image }}{% for e in form.image.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+<div class="col-md-6"><label class="form-label">Notes</label>{{ form.notes }}</div>
+</div>
+<div class="d-flex gap-2 mt-4">
+  <button class="btn btn-primary" type="submit" id="saveBtn">{% if mode == 'add' %}<i class="bi bi-plus-lg me-1"></i>Register equipment{% else %}<i class="bi bi-check-lg me-1"></i>Save changes{% endif %}</button>
+  <a class="btn btn-ghost" href="{% if eq %}{% url 'equipment_detail' eq.pk %}{% else %}{% url 'equipment_list' %}{% endif %}">Cancel</a>
+</div>
+</form>
+</div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('suggestBtn').addEventListener('click', async function(){
+  var c = document.getElementById('id_category').value, d = document.getElementById('id_department').value;
+  if(!c || !d){ toast('Select category and department first'); return; }
+  this.disabled = true; this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  try {
+    var r = await fetch("{% url 'equipment_suggest_id' %}?category=" + c + "&department=" + d);
+    var j = await r.json();
+    if(j.asset_tag){ document.getElementById('id_asset_tag').value = j.asset_tag; toast('Suggested ' + j.asset_tag, 'success'); }
+    else toast(j.error || 'Could not suggest ID', 'error');
+  } catch(e){ toast('Network error', 'error'); }
+  this.disabled = false; this.textContent = 'Suggest';
+});
+document.getElementById('eqForm').addEventListener('submit', function(){
+  var b = document.getElementById('saveBtn'); b.disabled = true;
+  b.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
+});
+</script>
+{% endblock %}
