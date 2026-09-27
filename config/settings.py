@@ -6,7 +6,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "change-me"
+SECRET_KEY = "wYa0XuguCsUPw-Wez4SsQfrFcPDVB7i1m37U5paOnaibBhIF9GO5GxzdanHvhHKydqfaVTOWMOWnXTyW_yJRcA"
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
