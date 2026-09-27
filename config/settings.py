@@ -3,10 +3,14 @@ MediServe settings.
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "wYa0XuguCsUPw-Wez4SsQfrFcPDVB7i1m37U5paOnaibBhIF9GO5GxzdanHvhHKydqfaVTOWMOWnXTyW_yJRcA"
+load_dotenv(BASE_DIR / ".env")
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "change-me")
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
